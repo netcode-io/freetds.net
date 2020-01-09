@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FreeTds.Net\Tds.Net.csproj" />
+    <ProjectReference Include="..\Tds.Net\Tds.Net.csproj" />
   </ItemGroup>
 
   <ItemGroup>
