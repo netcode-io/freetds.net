@@ -6,7 +6,7 @@ using Size_t = System.IntPtr;
 
 namespace FreeTds
 {
-    static partial class G { }
+    public static partial class G { }
 
     /// <summary>
     /// A structure to hold all the compile-time settings.
@@ -18,15 +18,15 @@ namespace FreeTds
         /// <summary>
         /// release version of FreeTDS
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string freetds_version;
+        [MarshalAs(UnmanagedType.LPStr)] public string freetds_version;
         /// <summary>
         /// location of freetds.conf
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string sysconfdir;
+        [MarshalAs(UnmanagedType.LPStr)] public string sysconfdir;
         /// <summary>
         /// latest software_version date among the modules
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string last_update;
+        [MarshalAs(UnmanagedType.LPStr)] public string last_update;
         /// <summary>
         /// for MS style dblib
         /// </summary>
@@ -88,11 +88,11 @@ namespace FreeTds
         /// </summary>
         public short offset;
         int _data_;
-        public ushort time_prec => 0; //:3;
-        public ushort _tds_reserved => 0; //:10;
-        public ushort has_time => 0; //:1;
-        public ushort has_date => 0; //:1;
-        public ushort has_offset => 0; //:1;
+        public ushort time_prec => (ushort)((_data_ >> 0) & 0x7); //:3
+        public ushort _tds_reserved => (ushort)((_data_ >> 3) & 1 << 0x3FF); //:10
+        public ushort has_time => (ushort)((_data_ >> 13) & 1);
+        public ushort has_date => (ushort)((_data_ >> 14) & 1);
+        public ushort has_offset => (ushort)((_data_ >> 15) & 1);
     }
 
     /// <summary>
@@ -152,7 +152,7 @@ namespace FreeTds
         /// <summary>
         /// The following little table is indexed by precision and will tell us the number of bytes required to store the specified precision.
         /// </summary>
-        public static readonly int[] tds_numeric_bytes_per_prec;
+        public static readonly int[] tds_numeric_bytes_per_prec = Tds.MarshalToPtrArray<int>("tds_numeric_bytes_per_prec", 1);
     }
 
     public enum TDSRET : int //:sky
@@ -369,7 +369,7 @@ namespace FreeTds
         [FieldOffset(0)]
         public int i;
         [FieldOffset(0)]
-        [MarshalAs(UnmanagedType.LPTStr)] public string c;
+        [MarshalAs(UnmanagedType.LPStr)] public string c;
     }
 
     public enum TDS_ENCRYPTION_LEVEL
@@ -656,28 +656,28 @@ namespace FreeTds
         /// <summary>
         /// if bulk copy should be enabled
         /// </summary>
-        public uint bulk_copy => (uint)((_data_ >> 0) & 1);
-        public uint suppress_language => (uint)((_data_ >> 1) & 1);
-        public uint emul_little_endian => (uint)((_data_ >> 2) & 1);
-        public uint gssapi_use_delegation => (uint)((_data_ >> 3) & 1);
-        public uint use_ntlmv2 => (uint)((_data_ >> 4) & 1);
-        public uint use_ntlmv2_specified => (uint)((_data_ >> 5) & 1);
-        public uint use_lanman => (uint)((_data_ >> 6) & 1);
-        public uint mars => (uint)((_data_ >> 7) & 1);
-        public uint use_utf16 => (uint)((_data_ >> 8) & 1);
-        public uint use_new_password => (uint)((_data_ >> 9) & 1);
-        public uint valid_configuration => (uint)((_data_ >> 10) & 1);
-        public uint check_ssl_hostname => (uint)((_data_ >> 11) & 1);
-        public uint readonly_intent => (uint)((_data_ >> 12) & 1);
-        public uint enable_tls_v1 => (uint)((_data_ >> 13) & 1);
-        public uint server_is_valid => (uint)((_data_ >> 14) & 1);
+        public bool bulk_copy => ((_data_ >> 0) & 1) != 0;
+        public bool suppress_language => ((_data_ >> 1) & 1) != 0;
+        public bool emul_little_endian => ((_data_ >> 2) & 1) != 0;
+        public bool gssapi_use_delegation => ((_data_ >> 3) & 1) != 0;
+        public bool use_ntlmv2 => ((_data_ >> 4) & 1) != 0;
+        public bool use_ntlmv2_specified => ((_data_ >> 5) & 1) != 0;
+        public bool use_lanman => ((_data_ >> 6) & 1) != 0;
+        public bool mars => ((_data_ >> 7) & 1) != 0;
+        public bool use_utf16 => ((_data_ >> 8) & 1) != 0;
+        public bool use_new_password => ((_data_ >> 9) & 1) != 0;
+        public bool valid_configuration => ((_data_ >> 10) & 1) != 0;
+        public bool check_ssl_hostname => ((_data_ >> 11) & 1) != 0;
+        public bool readonly_intent => ((_data_ >> 12) & 1) != 0;
+        public bool enable_tls_v1 => ((_data_ >> 13) & 1) != 0;
+        public bool server_is_valid => ((_data_ >> 14) & 1) != 0;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct TDSHEADERS
     {
-        [MarshalAs(UnmanagedType.LPTStr)] public string qn_options;
-        [MarshalAs(UnmanagedType.LPTStr)] public string qn_msgtext;
+        [MarshalAs(UnmanagedType.LPStr)] public string qn_options;
+        [MarshalAs(UnmanagedType.LPStr)] public string qn_msgtext;
         public int qn_timeout;
         /* TDS 7.4+: trace activity ID char[20] */
     }
@@ -685,9 +685,9 @@ namespace FreeTds
     [StructLayout(LayoutKind.Sequential)]
     public struct TDSLOCALE
     {
-        [MarshalAs(UnmanagedType.LPTStr)] public string language;
-        [MarshalAs(UnmanagedType.LPTStr)] public string server_charset;
-        [MarshalAs(UnmanagedType.LPTStr)] public string date_fmt;
+        [MarshalAs(UnmanagedType.LPStr)] public string language;
+        [MarshalAs(UnmanagedType.LPStr)] public string server_charset;
+        [MarshalAs(UnmanagedType.LPStr)] public string date_fmt;
     }
 
     /// <summary>
@@ -697,7 +697,7 @@ namespace FreeTds
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct TDSBLOB
     {
-        [MarshalAs(UnmanagedType.LPTStr)] public string textvalue;
+        [MarshalAs(UnmanagedType.LPStr)] public string textvalue;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)] public string textptr;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)] public string timestamp;
         public byte valid_ptr;
@@ -712,7 +712,7 @@ namespace FreeTds
         /// <summary>
         /// this MUST have same position and place of textvalue in tds_blob
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string data;
+        [MarshalAs(UnmanagedType.LPStr)] public string data;
         public int size;
         public int data_len;
         public TDS_SERVER_TYPE type;
@@ -728,7 +728,7 @@ namespace FreeTds
         /// <summary>
         /// name of the encoding (ie UTF-8)
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string name;
+        [MarshalAs(UnmanagedType.LPStr)] public string name;
         public byte min_bytes_per_char;
         public byte max_bytes_per_char;
         /// <summary>
@@ -891,7 +891,7 @@ namespace FreeTds
         /// </summary>
         public int bcp_prefix_len;
         public int bcp_term_len;
-        [MarshalAs(UnmanagedType.LPTStr)] public string bcp_terminator;
+        [MarshalAs(UnmanagedType.LPStr)] public string bcp_terminator;
     }
 
     /// <summary>
@@ -905,9 +905,9 @@ namespace FreeTds
         public ushort num_cols;
         public ushort computeid;
         public int ref_count;
-        public IntPtr attached_to; //: TDSSOCKET
+        public IntPtr attached_to; //:TDSSOCKET
         public byte[] current_row;
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void row_free_(TDSRESULTINFO result, byte[] row);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void row_free_(IntPtr result, byte[] row); //:TDSRESULTINFO
         public row_free_ row_free;
         public int row_size;
 
@@ -1008,10 +1008,10 @@ namespace FreeTds
     [StructLayout(LayoutKind.Sequential)]
     public struct TDSMESSAGE
     {
-        [MarshalAs(UnmanagedType.LPTStr)] public string server;
-        [MarshalAs(UnmanagedType.LPTStr)] public string message;
-        [MarshalAs(UnmanagedType.LPTStr)] public string proc_name;
-        [MarshalAs(UnmanagedType.LPTStr)] public string sql_state;
+        [MarshalAs(UnmanagedType.LPStr)] public string server;
+        [MarshalAs(UnmanagedType.LPStr)] public string message;
+        [MarshalAs(UnmanagedType.LPStr)] public string proc_name;
+        [MarshalAs(UnmanagedType.LPStr)] public string sql_state;
         public int msgno;
         public int line_number;
         /// <summary>
@@ -1031,7 +1031,7 @@ namespace FreeTds
     {
         public IntPtr next; //:TDSUPDCOL
         public int colnamelength;
-        [MarshalAs(UnmanagedType.LPTStr)] public string columnname;
+        [MarshalAs(UnmanagedType.LPStr)] public string columnname;
     }
 
     public enum TDS_CURSOR_STATE
@@ -1099,7 +1099,7 @@ namespace FreeTds
         /// <summary>
         /// name of the cursor
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string cursor_name;
+        [MarshalAs(UnmanagedType.LPStr)] public string cursor_name;
         /// <summary>
         /// cursor id returned by the server after cursor declare
         /// </summary>
@@ -1115,7 +1115,7 @@ namespace FreeTds
         /// <summary>
         /// SQL query
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string query;
+        [MarshalAs(UnmanagedType.LPStr)] public string query;
         /* TODO for updatable columns */
         ///// <summary>
         ///// number of updatable columns
@@ -1152,15 +1152,15 @@ namespace FreeTds
         /// packet size (512-65535)
         /// </summary>
         public int block_size;
-        [MarshalAs(UnmanagedType.LPTStr)] public string language;
+        [MarshalAs(UnmanagedType.LPStr)] public string language;
         /// <summary>
         /// character set encoding
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string charset;
+        [MarshalAs(UnmanagedType.LPStr)] public string charset;
         /// <summary>
         /// database name
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string database;
+        [MarshalAs(UnmanagedType.LPStr)] public string database;
     }
 
     /// <summary>
@@ -1209,7 +1209,7 @@ namespace FreeTds
         /// <summary>
         /// saved query, we need to know original query if prepare is impossible
         /// </summary>
-        [MarshalAs(UnmanagedType.LPTStr)] public string query;
+        [MarshalAs(UnmanagedType.LPStr)] public string query;
     }
 
     public enum TDS_MULTIPLE_TYPE
@@ -1289,7 +1289,7 @@ namespace FreeTds
         /// version of product (Sybase/MS and full version)
         /// </summary>
         public uint product_version;
-        [MarshalAs(UnmanagedType.LPTStr)] public string product_name;
+        [MarshalAs(UnmanagedType.LPStr)] public string product_name;
 
         /// <summary>
         /// tcp socket, INVALID_SOCKET if not connected
@@ -1358,7 +1358,7 @@ namespace FreeTds
         public IntPtr tls_dummy;
 #endif
         IntPtr authentication; //:TDSAUTHENTICATION
-        [MarshalAs(UnmanagedType.LPTStr)] public string server;
+        [MarshalAs(UnmanagedType.LPStr)] public string server;
     }
 
     /// <summary>
@@ -1411,7 +1411,7 @@ namespace FreeTds
         /// <summary>
         /// output buffer type
         /// </summary>
-        public byte out_flag;
+        [MarshalAs(UnmanagedType.U1)] public TDS_PACKET_TYPE out_flag;
 
         public IntPtr parent;
 
@@ -1486,7 +1486,7 @@ namespace FreeTds
         /// config for login stuff. After login this field is NULL
         /// </summary>
         public IntPtr login; //:TDSLOGIN
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate TDSRET env_chg_func_t(ref TDSSOCKET tds, int type, [MarshalAs(UnmanagedType.LPTStr)] string oldVal, [MarshalAs(UnmanagedType.LPTStr)] string newval);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate TDSRET env_chg_func_t(ref TDSSOCKET tds, int type, [MarshalAs(UnmanagedType.LPStr)] string oldVal, [MarshalAs(UnmanagedType.LPStr)] string newval);
         public env_chg_func_t env_chg_func;
         public TDS_OPERATION current_op;
 
@@ -1509,58 +1509,58 @@ namespace FreeTds
         internal const string LibraryName = "tds.dll";
 
         #region config.c
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr gumbo_tag_from_original_text();
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void TDSCONFPARSE([MarshalAs(UnmanagedType.LPTStr)] string option, [MarshalAs(UnmanagedType.LPTStr)] string value, IntPtr param);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_read_conf_section(IntPtr @in, [MarshalAs(UnmanagedType.LPTStr)] string section, TDSCONFPARSE tds_conf_parse, IntPtr parse_param);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_read_conf_file(ref TDSLOGIN login, [MarshalAs(UnmanagedType.LPTStr)] string server);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_parse_conf_section([MarshalAs(UnmanagedType.LPTStr)] string option, [MarshalAs(UnmanagedType.LPTStr)] string value, IntPtr param);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_get_compiletime_settings();
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void TDSCONFPARSE([MarshalAs(UnmanagedType.LPStr)] string option, [MarshalAs(UnmanagedType.LPStr)] string value, IntPtr param);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_read_conf_section(IntPtr @in, [MarshalAs(UnmanagedType.LPStr)] string section, TDSCONFPARSE tds_conf_parse, IntPtr parse_param);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_read_conf_file(ref TDSLOGIN login, [MarshalAs(UnmanagedType.LPStr)] string server);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_parse_conf_section([MarshalAs(UnmanagedType.LPStr)] string option, [MarshalAs(UnmanagedType.LPStr)] string value, IntPtr param);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSLOGIN tds_read_config_info(ref TDSSOCKET tds, ref TDSLOGIN login, ref TDSLOCALE locale);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_fix_login(ref TDSLOGIN login);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern ushort[] tds_config_verstr([MarshalAs(UnmanagedType.LPTStr)] string tdsver, ref TDSLOGIN login);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_lookup_host([MarshalAs(UnmanagedType.LPTStr)] string servername);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_lookup_host_set([MarshalAs(UnmanagedType.LPTStr)] string servername, IntPtr addr);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_addrinfo2str(IntPtr addr, [MarshalAs(UnmanagedType.LPTStr)] string name, int namemax);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_get_home_file([MarshalAs(UnmanagedType.LPTStr)] string file);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern ushort[] tds_config_verstr([MarshalAs(UnmanagedType.LPStr)] string tdsver, ref TDSLOGIN login);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_lookup_host([MarshalAs(UnmanagedType.LPStr)] string servername);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_lookup_host_set([MarshalAs(UnmanagedType.LPStr)] string servername, IntPtr addr);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_addrinfo2str(IntPtr addr, [MarshalAs(UnmanagedType.LPStr)] string name, int namemax);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_get_home_file([MarshalAs(UnmanagedType.LPStr)] string file);
 
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_set_interfaces_file_loc([MarshalAs(UnmanagedType.LPTStr)] string interfloc);
-        //[DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [MarshalAs(UnmanagedType.LPTStr)] public static extern string STD_DATETIME_FMT;
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_parse_boolean([MarshalAs(UnmanagedType.LPTStr)] string value, int default_value);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_config_boolean([MarshalAs(UnmanagedType.LPTStr)] string option, [MarshalAs(UnmanagedType.LPTStr)] string value, ref TDSLOGIN login);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_set_interfaces_file_loc([MarshalAs(UnmanagedType.LPStr)] string interfloc);
+        //[DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [MarshalAs(UnmanagedType.LPStr)] public static extern string STD_DATETIME_FMT;
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_parse_boolean([MarshalAs(UnmanagedType.LPStr)] string value, int default_value);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_config_boolean([MarshalAs(UnmanagedType.LPStr)] string option, [MarshalAs(UnmanagedType.LPStr)] string value, ref TDSLOGIN login);
 
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSLOCALE tds_get_locale();
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_alloc_row(ref TDSRESULTINFO res_info);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_alloc_compute_row(ref TDSCOMPUTEINFO res_info);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_bcp_column_data(uint column_size);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_lookup_dynamic(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPTStr)] string id);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_prtype(int token);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_lookup_dynamic(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPStr)] string id);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_prtype(int token);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_get_varint_size(ref TDSCONNECTION conn, int datatype);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDS_SERVER_TYPE tds_get_cardinal_type(ref TDS_SERVER_TYPE datatype, int usertype);
         #endregion
 
         #region iconv.c
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_iconv_open(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPTStr)] string charset, int use_utf16);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_iconv_open(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPStr)] string charset, int use_utf16);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_iconv_close(ref TDSCONNECTION conn);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_srv_charset_changed(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPTStr)] string charset);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_srv_charset_changed(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPStr)] string charset);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds7_srv_charset_changed(ref TDSCONNECTION conn, int sql_collate, int lcid);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_iconv_alloc(ref TDSCONNECTION conn);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_iconv_free(ref TDSCONNECTION conn);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_iconv_from_collate(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPTStr)] string collate); //:TDSICONV
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_iconv_from_collate(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPStr)] string collate); //:TDSICONV
         #endregion
 
         #region mem.c
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_socket(ref TDSSOCKET tds);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_all_results(ref TDSSOCKET tds);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_results(ref TDSRESULTINFO res_info);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_param_results(ref TDSPARAMINFO param_info);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_param_result(ref TDSPARAMINFO param_info);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_msg(ref TDSMESSAGE message);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_socket(IntPtr tds); //:TDSSOCKET
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_all_results(IntPtr tds); //:TDSSOCKET
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_results(IntPtr res_info); //:TDSRESULTINFO
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_param_results(IntPtr param_info); //:TDSPARAMINFO
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_param_result(IntPtr param_info); //:TDSPARAMINFO
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_msg(IntPtr message); //:TDSMESSAGE
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_cursor_deallocated(ref TDSCONNECTION conn, ref TDSCURSOR cursor);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_release_cursor(ref TDSCURSOR[] pcursor);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_bcp_column_data(ref BCPCOLDATA coldata);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_results(ushort num_cols); //:TDSRESULTINFO
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr[] tds_alloc_compute_results(ref TDSSOCKET tds, ushort num_cols, ushort by_cols); //:TDSCOMPUTEINFO
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_context(ref IntPtr parent); //:TDSCONTEXT
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_context(ref TDSCONTEXT locale);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_context(IntPtr parent); //:TDSCONTEXT
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_context(IntPtr locale); //:TDSCONTEXT
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_param_result(ref TDSPARAMINFO old_param); //:TDSPARAMINFO
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_input_params(ref TDSDYNAMIC dyn);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_release_dynamic(ref IntPtr dyn); //:TDSDYNAMIC
@@ -1568,18 +1568,18 @@ namespace FreeTds
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_dynamic_deallocated(ref TDSCONNECTION conn, ref TDSDYNAMIC dyn);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_set_cur_dyn(ref TDSSOCKET tds, ref TDSDYNAMIC dyn);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_realloc_socket(ref TDSSOCKET tds, Size_t bufsize); //:TDSSOCKET
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_alloc_client_sqlstate(int msgno);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_alloc_lookup_sqlstate(ref TDSSOCKET tds, int msgno);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_alloc_client_sqlstate(int msgno);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_alloc_lookup_sqlstate(ref TDSSOCKET tds, int msgno);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_login(int use_environment); //:TDSLOGIN
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_dynamic(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPTStr)] string id); //:TDSDYNAMIC
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_login(ref TDSLOGIN login);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_dynamic(ref TDSCONNECTION conn, [MarshalAs(UnmanagedType.LPStr)] string id); //:TDSDYNAMIC
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_login(IntPtr login); //:TDSLOGIN
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_init_login(ref TDSLOGIN login, ref TDSLOCALE locale); //:TDSLOGIN
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_locale(); //:TDSLOCALE
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_param_data(ref TDSCOLUMN curparam);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_locale(ref TDSLOCALE locale);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_cursor(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string name, int namelen, [MarshalAs(UnmanagedType.LPTStr)] string query, int querylen); //:TDSCURSOR
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_cursor(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string name, int namelen, [MarshalAs(UnmanagedType.LPStr)] string query, int querylen); //:TDSCURSOR
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_free_row(ref TDSRESULTINFO res_info, IntPtr row);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_socket(ref TDSCONTEXT context, uint bufsize); //:TDSSOCKET
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_socket(IntPtr context, uint bufsize); //:TDSCONTEXT:TDSSOCKET
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr tds_alloc_additional_socket(ref TDSCONNECTION conn); //:TDSSOCKET
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_set_current_results(ref TDSSOCKET tds, ref TDSRESULTINFO info);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_detach_results(ref TDSRESULTINFO info);
@@ -1599,15 +1599,15 @@ namespace FreeTds
         #region login.c
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_set_packet(ref TDSLOGIN tds_login, int packet_size);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_set_port(ref TDSLOGIN tds_login, int port);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_passwd(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPTStr)] string password);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_passwd(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPStr)] string password);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_set_bulk(ref TDSLOGIN tds_login, bool enabled);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_user(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPTStr)] string username);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_app(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPTStr)] string application);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_host(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPTStr)] string hostname);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_library(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPTStr)] string library);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_server(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPTStr)] string server);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_client_charset(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPTStr)] string charset);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_language(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPTStr)] string language);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_user(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPStr)] string username);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_app(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPStr)] string application);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_host(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPStr)] string hostname);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_library(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPStr)] string library);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_server(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPStr)] string server);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_client_charset(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPStr)] string charset);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_set_language(ref TDSLOGIN tds_login, [MarshalAs(UnmanagedType.LPStr)] string language);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_set_version(ref TDSLOGIN tds_login, byte major_ver, byte minor_ver);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_connect_and_login(ref TDSSOCKET tds, ref TDSLOGIN login);
         #endregion
@@ -1615,32 +1615,32 @@ namespace FreeTds
         #region query.c
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_start_query(ref TDSSOCKET tds, byte packet_type);
 
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_query(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string query);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_query_params(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string query, ref TDSPARAMINFO @params, ref TDSHEADERS head);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_queryf(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string queryf, params object[] args);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_prepare(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string query, [MarshalAs(UnmanagedType.LPTStr)] string id, out TDSDYNAMIC dyn_out, ref TDSPARAMINFO @params);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_execdirect(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string query, ref TDSPARAMINFO @params, ref TDSHEADERS head);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds71_submit_prepexec(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string query, [MarshalAs(UnmanagedType.LPTStr)] string id, out TDSDYNAMIC dyn_out, ref TDSPARAMINFO @params);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_query(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string query);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_query_params(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string query, ref TDSPARAMINFO @params, ref TDSHEADERS head);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_queryf(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string queryf, params object[] args);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_prepare(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string query, [MarshalAs(UnmanagedType.LPStr)] string id, out TDSDYNAMIC dyn_out, ref TDSPARAMINFO @params);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_execdirect(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string query, ref TDSPARAMINFO @params, ref TDSHEADERS head);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds71_submit_prepexec(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string query, [MarshalAs(UnmanagedType.LPStr)] string id, out TDSDYNAMIC dyn_out, ref TDSPARAMINFO @params);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_execute(ref TDSSOCKET tds, ref TDSDYNAMIC dyn);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_send_cancel(ref TDSSOCKET tds);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_next_placeholder([MarshalAs(UnmanagedType.LPTStr)] string start);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_count_placeholders([MarshalAs(UnmanagedType.LPTStr)] string query);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_next_placeholder([MarshalAs(UnmanagedType.LPStr)] string start);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_count_placeholders([MarshalAs(UnmanagedType.LPStr)] string query);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_needs_unprepare(ref TDSCONNECTION conn, ref TDSDYNAMIC dyn);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_deferred_unprepare(ref TDSCONNECTION conn, ref TDSDYNAMIC dyn);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_unprepare(ref TDSSOCKET tds, ref TDSDYNAMIC dyn);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_rpc(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string rpc_name, ref TDSPARAMINFO @params, ref TDSHEADERS head);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_rpc(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string rpc_name, ref TDSPARAMINFO @params, ref TDSHEADERS head);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_optioncmd(ref TDSSOCKET tds, TDS_OPTION_CMD command, TDS_OPTION option, ref TDS_OPTION_ARG param, int param_size);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_begin_tran(ref TDSSOCKET tds);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_rollback(ref TDSSOCKET tds, int cont);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_submit_commit(ref TDSSOCKET tds, int cont);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_disconnect(ref TDSSOCKET tds);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern Size_t tds_quote_id(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string buffer, [MarshalAs(UnmanagedType.LPTStr)] string id, int idlen);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern Size_t tds_quote_string(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string buffer, [MarshalAs(UnmanagedType.LPTStr)] string str, int len);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_skip_comment([MarshalAs(UnmanagedType.LPTStr)] string s);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_skip_quoted([MarshalAs(UnmanagedType.LPTStr)] string s);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern Size_t tds_quote_id(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string buffer, [MarshalAs(UnmanagedType.LPStr)] string id, int idlen);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern Size_t tds_quote_string(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string buffer, [MarshalAs(UnmanagedType.LPStr)] string str, int len);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_skip_comment([MarshalAs(UnmanagedType.LPStr)] string s);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_skip_quoted([MarshalAs(UnmanagedType.LPStr)] string s);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern Size_t tds_fix_column_size(ref TDSSOCKET tds, ref TDSCOLUMN curcol);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_convert_string(ref TDSSOCKET tds, ref TDSICONV char_conv, [MarshalAs(UnmanagedType.LPTStr)] string s, int len, out Size_t out_len);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_convert_string_free([MarshalAs(UnmanagedType.LPTStr)] string original, [MarshalAs(UnmanagedType.LPTStr)] string converted);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_convert_string(ref TDSSOCKET tds, ref TDSICONV char_conv, [MarshalAs(UnmanagedType.LPStr)] string s, int len, out Size_t out_len);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_convert_string_free([MarshalAs(UnmanagedType.LPStr)] string original, [MarshalAs(UnmanagedType.LPStr)] string converted);
 #if !ENABLE_EXTRA_CHECKS
         //[DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_convert_string_free(object original, object converted) { if (original != converted) free((char*)converted); }
 #endif
@@ -1659,7 +1659,7 @@ namespace FreeTds
 
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_multiple_init(ref TDSSOCKET tds, ref TDSMULTIPLE multiple, TDS_MULTIPLE_TYPE type, ref TDSHEADERS head);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_multiple_done(ref TDSSOCKET tds, ref TDSMULTIPLE multiple);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_multiple_query(ref TDSSOCKET tds, ref TDSMULTIPLE multiple, [MarshalAs(UnmanagedType.LPTStr)] string query, ref TDSPARAMINFO @params);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_multiple_query(ref TDSSOCKET tds, ref TDSMULTIPLE multiple, [MarshalAs(UnmanagedType.LPStr)] string query, ref TDSPARAMINFO @params);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_multiple_execute(ref TDSSOCKET tds, ref TDSMULTIPLE multiple, ref TDSDYNAMIC dyn);
 
         #endregion
@@ -1688,7 +1688,7 @@ namespace FreeTds
         #region write.c
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_init_write_buf(ref TDSSOCKET tds);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_put_n(ref TDSSOCKET tds, byte[] buf, IntPtr n);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_put_string(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)]string buf, int len);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_put_string(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)]string buf, int len);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_put_int(ref TDSSOCKET tds, int i);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_put_int8(ref TDSSOCKET tds, long i);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_put_smallint(ref TDSSOCKET tds, short si);
@@ -1714,8 +1714,8 @@ namespace FreeTds
         public static int tds_get_int(ref TDSSOCKET tds) => (int)tds_get_uint(ref tds);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern long tds_get_uint8(ref TDSSOCKET tds);
         public static long tds_get_int8(ref TDSSOCKET tds) => (long)tds_get_uint8(ref tds);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern Size_t tds_get_string(ref TDSSOCKET tds, Size_t string_len, [MarshalAs(UnmanagedType.LPTStr)] string dest, Size_t dest_size);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_get_char_data(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string dest, Size_t wire_size, ref TDSCOLUMN curcol);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern Size_t tds_get_string(ref TDSSOCKET tds, Size_t string_len, [MarshalAs(UnmanagedType.LPStr)] string dest, Size_t dest_size);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_get_char_data(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string dest, Size_t wire_size, ref TDSCOLUMN curcol);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern bool tds_get_n(ref TDSSOCKET tds, out IntPtr dest, Size_t n);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_get_size_by_type(TDS_SERVER_TYPE servertype);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.TBStr)] public static extern string tds_dstr_get(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.TBStr)] string s, Size_t len);
@@ -1726,19 +1726,19 @@ namespace FreeTds
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDS_STATE tds_set_state(ref TDSSOCKET tds, TDS_STATE state);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_swap_bytes(byte[] buf, int bytes);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern uint tds_gettime_ms();
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_strndup(byte[] s, IntPtr len);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_strndup(byte[] s, IntPtr len);
         #endregion
 
         #region log.c
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tdsdump_off();
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tdsdump_on();
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tdsdump_isopen();
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tdsdump_open([MarshalAs(UnmanagedType.LPTStr)] string filename);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tdsdump_open([MarshalAs(UnmanagedType.LPStr)] string filename);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tdsdump_close();
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tdsdump_dump_buf([MarshalAs(UnmanagedType.LPTStr)] string file, uint level_line, [MarshalAs(UnmanagedType.LPTStr)] string msg, byte[] buf, Size_t length);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tdsdump_dump_buf([MarshalAs(UnmanagedType.LPStr)] string file, uint level_line, [MarshalAs(UnmanagedType.LPStr)] string msg, byte[] buf, Size_t length);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tdsdump_col(ref TDSCOLUMN col);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void tdsdump_log([MarshalAs(UnmanagedType.LPTStr)] string file, uint level_line, [MarshalAs(UnmanagedType.LPTStr)] string fmt, params object[] args);
+        public static extern void tdsdump_log([MarshalAs(UnmanagedType.LPStr)] string file, uint level_line, [MarshalAs(UnmanagedType.LPStr)] string fmt, params object[] args);
 
         //public static void TDSDUMP_LOG_FAST() { if (TDS_UNLIKELY(tds_write_dump)) tdsdump_log() }
         //public static void tdsdump_log() => TDSDUMP_LOG_FAST();
@@ -1754,9 +1754,9 @@ namespace FreeTds
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSERRNO tds_open_socket(ref TDSSOCKET tds, IntPtr ipaddr, uint port, int timeout, out int p_oserr); //:addrinfo
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_close_socket(ref TDSSOCKET tds);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds7_get_instance_ports(IntPtr output, IntPtr addr); //:addrinfo
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds7_get_instance_port(IntPtr addr, [MarshalAs(UnmanagedType.LPTStr)] string instance); //:addrinfo
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_prwsaerror(int erc);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_prwsaerror_free([MarshalAs(UnmanagedType.LPTStr)] string s);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds7_get_instance_port(IntPtr addr, [MarshalAs(UnmanagedType.LPStr)] string instance); //:addrinfo
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_prwsaerror(int erc);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern void tds_prwsaerror_free([MarshalAs(UnmanagedType.LPStr)] string s);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_connection_read(ref TDSSOCKET tds, byte[] buf, int buflen);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_connection_write(ref TDSSOCKET tds, byte[] buf, int buflen, int final);
         //public static void TDSSELREAD() => POLLIN();
@@ -1785,12 +1785,12 @@ namespace FreeTds
         #endregion
 
         #region vstrbuild.c
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_vstrbuild(byte[] buffer, int buflen, ref int resultlen, [MarshalAs(UnmanagedType.LPTStr)] string text, int textlen, [MarshalAs(UnmanagedType.LPTStr)] string formats, int formatlen, IntPtr ap);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_vstrbuild(byte[] buffer, int buflen, ref int resultlen, [MarshalAs(UnmanagedType.LPStr)] string text, int textlen, [MarshalAs(UnmanagedType.LPStr)] string formats, int formatlen, IntPtr ap);
         #endregion
 
         #region numeric.c
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPTStr)] public static extern string tds_money_to_string(ref TDS_MONEY money, [MarshalAs(UnmanagedType.LPTStr)] string s, bool use_2_digits);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_numeric_to_string(ref TDS_NUMERIC numeric, [MarshalAs(UnmanagedType.LPTStr)] string s);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_money_to_string(ref TDS_MONEY money, [MarshalAs(UnmanagedType.LPStr)] string s, bool use_2_digits);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_numeric_to_string(ref TDS_NUMERIC numeric, [MarshalAs(UnmanagedType.LPStr)] string s);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern int tds_numeric_change_prec_scale(ref TDS_NUMERIC numeric, byte new_prec, byte new_scale);
         #endregion
 
@@ -1830,10 +1830,10 @@ namespace FreeTds
         [StructLayout(LayoutKind.Sequential)]
         public struct TDSBCPINFO
         {
-            [MarshalAs(UnmanagedType.LPTStr)] string hint;
+            [MarshalAs(UnmanagedType.LPStr)] string hint;
             IntPtr parent;
             [MarshalAs(UnmanagedType.TBStr)] string tablename;
-            [MarshalAs(UnmanagedType.LPTStr)] string insert_stmt;
+            [MarshalAs(UnmanagedType.LPStr)] string insert_stmt;
             int direction;
             int identity_insert_on;
             int xfer_init;
@@ -1849,13 +1849,16 @@ namespace FreeTds
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_bcp_start(ref TDSSOCKET tds, ref TDSBCPINFO bcpinfo);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_bcp_start_copy_in(ref TDSSOCKET tds, ref TDSBCPINFO bcpinfo);
 
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_bcp_fread(ref TDSSOCKET tds, ref TDSICONV conv, IntPtr stream, [MarshalAs(UnmanagedType.LPTStr)] string terminator, Size_t term_len, out byte[] outbuf, out Size_t outbytes);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_bcp_fread(ref TDSSOCKET tds, ref TDSICONV conv, IntPtr stream, [MarshalAs(UnmanagedType.LPStr)] string terminator, Size_t term_len, out byte[] outbuf, out Size_t outbytes);
 
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_writetext_start(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string objname, [MarshalAs(UnmanagedType.LPTStr)] string textptr, [MarshalAs(UnmanagedType.LPTStr)] string timestamp, int with_log, uint size);
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_writetext_continue(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPTStr)] string text, uint size);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_writetext_start(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string objname, [MarshalAs(UnmanagedType.LPStr)] string textptr, [MarshalAs(UnmanagedType.LPStr)] string timestamp, int with_log, uint size);
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_writetext_continue(ref TDSSOCKET tds, [MarshalAs(UnmanagedType.LPStr)] string text, uint size);
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)] public static extern TDSRET tds_writetext_end(ref TDSSOCKET tds);
         #endregion
+    }
 
+    partial class G
+    {
         //public unsafe static bool tds_capability_enabled(ref TDS_CAPABILITY_TYPE cap, uint cap_num) => cap.values[sizeof(cap.values) - 1 - (cap_num >> 3)] >> (cap_num & 7)) &1;
         //public static bool tds_capability_has_req(ref TDSCONNECTION conn, ref TDS_CAPABILITY_TYPE cap) => tds_capability_enabled(ref conn.capabilities.types[0], cap);
 
@@ -1874,7 +1877,9 @@ namespace FreeTds
         public static bool IS_TDS73_PLUS(ref TDSCONNECTION x) => x.tds_version >= 0x703;
         public static bool IS_TDS74_PLUS(ref TDSCONNECTION x) => x.tds_version >= 0x704;
 
+        public static int TDS_MAJOR(ref TDSLOGIN x) => x.tds_version >> 8;
         public static int TDS_MAJOR(ref TDSCONNECTION x) => x.tds_version >> 8;
+        public static int TDS_MINOR(ref TDSLOGIN x) => x.tds_version & 0xff;
         public static int TDS_MINOR(ref TDSCONNECTION x) => x.tds_version & 0xff;
 
         public static bool IS_TDSDEAD(TDSSOCKET? x) => x == null || x.Value.state == TDS_STATE.TDS_DEAD;
@@ -1913,8 +1918,8 @@ namespace FreeTds
         /// <returns></returns>
         public static ulong TDS_SYB_VER(int maj, int min, int x) => (ulong)((maj << 24) | (min << 16) | x << 8);
 
-        public static void TDS_PUT_INT(ref TDSSOCKET tds, int v) => tds_put_int(ref tds, v);
-        public static void TDS_PUT_SMALLINT(ref TDSSOCKET tds, short v) => tds_put_smallint(ref tds, v);
-        public static void TDS_PUT_BYTE(ref TDSSOCKET tds, byte v) => tds_put_byte(ref tds, v);
+        public static void TDS_PUT_INT(ref TDSSOCKET tds, int v) => NativeMethods.tds_put_int(ref tds, v);
+        public static void TDS_PUT_SMALLINT(ref TDSSOCKET tds, short v) => NativeMethods.tds_put_smallint(ref tds, v);
+        public static void TDS_PUT_BYTE(ref TDSSOCKET tds, byte v) => NativeMethods.tds_put_byte(ref tds, v);
     }
 }

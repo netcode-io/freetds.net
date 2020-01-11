@@ -5,7 +5,7 @@ namespace FreeTds
     /// <summary>
     /// This file contains defines and structures strictly related to TDS protocol
     /// </summary>
-    static partial class P { }
+    public static partial class P { }
 
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct TDS_NUMERIC
@@ -333,7 +333,7 @@ namespace FreeTds
         TDS_OPT_LEVEL3 = 3
     }
 
-    public enum TDS_PACKET_TYPE
+    public enum TDS_PACKET_TYPE : byte
     {
         TDS_QUERY = 1,
         TDS_LOGIN = 2,

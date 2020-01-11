@@ -1,13 +1,12 @@
 ﻿#define CORECLR
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace FreeTds
 {
     public static class NativeLibrary
     {
-        public static string LibraryOverride { get; set; }
-
         public static INativeLibrary Create(string name)
         {
 #if CORECLR
@@ -23,6 +22,7 @@ namespace FreeTds
     public interface INativeLibrary : IDisposable
     {
         T MarshalStructure<T>(string name);
+        T[] MarshalToPtrArray<T>(string name, int count);
     }
 
     internal sealed class WindowsNativeLibrary : INativeLibrary
@@ -32,8 +32,9 @@ namespace FreeTds
 
         public WindowsNativeLibrary(string name)
         {
-            var library = NativeLibrary.LibraryOverride ?? (IntPtr.Size == 8 ? $"x64\\{name}" : $"x86\\{name}");
-            _LibarayHandle = LoadLibrary(library);
+            var dllPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Environment.Is64BitProcess ? "x64" : "x86");
+            Environment.SetEnvironmentVariable("PATH", $"{Environment.GetEnvironmentVariable("PATH")};{dllPath}");
+            _LibarayHandle = LoadLibrary(name);
             if (_LibarayHandle == IntPtr.Zero)
                 throw new InvalidOperationException($"library {name} not found");
         }
@@ -54,6 +55,20 @@ namespace FreeTds
             return ptr != IntPtr.Zero ? Marshal.PtrToStructure<T>(ptr) : throw new InvalidOperationException($"function {name} not found");
         }
 
+        public T[] MarshalToPtrArray<T>(string name, int count)
+        {
+            if (_IsDisposed)
+                throw new ObjectDisposedException("UnmanagedLibrary");
+            var ptr = GetProcAddress(_LibarayHandle, name);
+            if (ptr == IntPtr.Zero)
+                return new T[0];
+            var r = new T[count];
+            var typeofT = typeof(T);
+            if (typeofT == typeof(int)) Marshal.Copy(ptr, (int[])(object)r, 0, r.Length);
+            else throw new ArgumentOutOfRangeException(nameof(T), typeofT.Name);
+            return r;
+        }
+
         ~WindowsNativeLibrary() { Dispose(); }
 
         [DllImport("kernel32.dll")] static extern IntPtr LoadLibrary(string fileName);
@@ -69,7 +84,7 @@ namespace FreeTds
 
         public LinuxNativeLibrary(string name)
         {
-            var library = NativeLibrary.LibraryOverride ?? (IntPtr.Size == 8 ? $"x64\\{name}" : $"x86\\{name}");
+            var library = (IntPtr.Size == 8 ? $"x64\\{name}" : $"x86\\{name}");
             _LibarayHandle = dlopen(library, RTLD_NOW);
             if (_LibarayHandle == IntPtr.Zero)
                 throw new InvalidOperationException($"library {name} not found");
@@ -94,6 +109,25 @@ namespace FreeTds
             if (errPtr != IntPtr.Zero)
                 throw new Exception("dlsym: " + Marshal.PtrToStringAnsi(errPtr));
             return Marshal.PtrToStructure<T>(ptr);
+        }
+
+        public T[] MarshalToPtrArray<T>(string name, int count)
+        {
+            if (_IsDisposed)
+                throw new ObjectDisposedException("UnmanagedLibrary");
+            // clear previous errors if any
+            dlerror();
+            var ptr = dlsym(_LibarayHandle, name);
+            var errPtr = dlerror();
+            if (errPtr != IntPtr.Zero)
+                throw new Exception("dlsym: " + Marshal.PtrToStringAnsi(errPtr));
+            if (ptr == IntPtr.Zero)
+                return new T[0];
+            var r = new T[count];
+            var typeofT = typeof(T);
+            if (typeofT == typeof(int)) Marshal.Copy(ptr, (int[])(object)r, 0, r.Length);
+            else throw new ArgumentOutOfRangeException(nameof(T), typeofT.Name);
+            return r;
         }
 
         ~LinuxNativeLibrary() { Dispose(); }

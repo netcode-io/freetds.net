@@ -23,8 +23,10 @@ if os.ishost "windows" then
  && popd \z
  && cmake --build _build32 --config Release \z
  && copy _build32\\Release\\tds.dll Tds.Net\\x86 \z
+ && copy _vcpkg\\packages\\openssl-windows_x86-windows\\bin\\*.dll Tds.Net\\x86 \z
  && cmake --build _build64 --config Release \z
- && copy _build64\\Release\\tds.dll Tds.Net\\x64"
+ && copy _build64\\Release\\tds.dll Tds.Net\\x64 \z
+ && copy _vcpkg\\packages\\openssl-windows_x64-windows\\bin\\*.dll Tds.Net\\x64"
         end
     }
 
