@@ -12,6 +12,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;HAVE_OPENSSL ENABLE_ODBC_WIDE ENABLE_ODBC_MARS _REENTRANT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

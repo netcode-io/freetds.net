@@ -1,37 +1,14 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 //using TdsComputeInfo = FreeTds.TdsResultInfo;
-using TdsParamInfo = FreeTds.TdsResultInfo;
+//using TdsParamInfo = FreeTds.TdsResultInfo;
 using Size_t = System.IntPtr;
 
 namespace FreeTds
 {
     public static class Tds
     {
-        static bool _disposed;
-        static readonly TdsFactory _factory;
-        static readonly INativeLibrary _library = NativeLibrary.Create(NativeMethods.LibraryName);
-
-        static Tds()
-        {
-            var lazyFactory = new LazyFactory(() => _disposed, typeof(Tds).Name);
-            _factory = new TdsFactory(lazyFactory);
-        }
-        //~Tds() => Dispose();
-
-        public static void Dispose()
-        {
-            if (_disposed)
-                return;
-            _library?.Dispose();
-            _disposed = true;
-        }
-
-        public static void Touch() { }
-
-        public static T MarshalStructure<T>(string name) => _library.MarshalStructure<T>(name);
-        public static T[] MarshalToPtrArray<T>(string name, int count) => _library.MarshalToPtrArray<T>(name, count);
-
+        static Tds() => NativeMethods.Touch();
         // tds : config.c
         public static TDS_COMPILETIME_SETTINGS GetCompiletimeSettings() => Marshal.PtrToStructure<TDS_COMPILETIME_SETTINGS>(NativeMethods.tds_get_compiletime_settings());
         public delegate void TdsConfParse(string option, string value, object param);
@@ -49,68 +26,93 @@ namespace FreeTds
         public static int ConfigBoolean(string option, string value, TdsLogin login) => NativeMethods.tds_config_boolean(option, value, login.Ptr);
         //
         public static TDSLOCALE GetLocale() => NativeMethods.tds_get_locale();
-        public static BcpColData AllocBcpColumnData(uint columnSize) => new BcpColData(NativeMethods.tds_alloc_bcp_column_data(columnSize));
+        public static BcpColData AllocBcpColumnData(uint columnSize) => NativeMethods.tds_alloc_bcp_column_data(columnSize).ToMarshaledObject<BcpColData, BCPCOLDATA>();
         public static string Prtype(int token) => NativeMethods.tds_prtype(token);
         public static TDS_SERVER_TYPE GetCardinalType(TDS_SERVER_TYPE datatype, int usertype) => NativeMethods.tds_get_cardinal_type(datatype, usertype);
 
+        // tds : mem.c
+        public static TdsResultInfo AllocResults(ushort numCols) => NativeMethods.tds_alloc_results(numCols).ToMarshaledObject<TdsResultInfo, TDSRESULTINFO>();
+        public static TdsContext AllocContext(TdsContext parent = null) => NativeMethods.tds_alloc_context(parent?.Ptr ?? IntPtr.Zero).ToMarshaledObject<TdsContext, TDSCONTEXT>();
+        public static string AllocClientSqlstate(int msgno) => NativeMethods.tds_alloc_client_sqlstate(msgno);
+        public static TdsLogin AllocLogin(int useEnvironment) => NativeMethods.tds_alloc_login(useEnvironment).ToMarshaledObject<TdsLogin, TDSLOGIN>();
+        public static TdsLocale AllocLocale() => NativeMethods.tds_alloc_locale().ToMarshaledObject<TdsLocale, TDSLOCALE>();
+        public static IntPtr Realloc(IntPtr p, Size_t newSize) => NativeMethods.tds_realloc(p, newSize);
+        //#define TDS_RESIZE(p, n_elem) tds_realloc((void**) &(p), sizeof(*(p)) * (size_t) (n_elem))
+        public static TdsPacket AllocPacket(byte[] buf, uint len) => NativeMethods.tds_alloc_packet(buf, len).ToMarshaledObject<TdsPacket, TDSPACKET>();
+        public static TdsBcpInfo AllocBcpinfo() => NativeMethods.tds_alloc_bcpinfo().ToMarshaledObject<TdsBcpInfo, TDSBCPINFO>();
+
+        // tds : query.c
+        public static string NextPlaceholder(string start) => NativeMethods.tds_next_placeholder(start);
+        public static int CountPlaceholders(string query) => NativeMethods.tds_count_placeholders(query);
+        public static string SkipComment(string s) => NativeMethods.tds_skip_comment(s);
+        public static string SkipQuoted(string s) => NativeMethods.tds_skip_quoted(s);
+        public static void ConvertStringFree(string original, string converted) => NativeMethods.tds_convert_string_free(original, converted);
+
+        // tds : token.c
+        public static int GetTokenSize(int marker) => NativeMethods.tds_get_token_size(marker);
+
+        // tds : tds_convert.c
+        public static TDSRET Datecrack(int datetype, byte[] di, out TDSDATEREC dr) => NativeMethods.tds_datecrack(datetype, di, out dr);
+        public static TDS_SERVER_TYPE GetConversionType(TDS_SERVER_TYPE srctype, int colsize) => NativeMethods.tds_get_conversion_type(srctype, colsize);
+
+        // tds : util.c
+        public static void SwapBytes(byte[] buf, int bytes) => NativeMethods.tds_swap_bytes(buf, bytes);
+        public static uint GettimeMs() => NativeMethods.tds_gettime_ms();
+        public static string Strndup(byte[] s, IntPtr len) => NativeMethods.tds_strndup(s, len);
     }
 
-    public class BcpColData : TdsObject<BCPCOLDATA>
+    public class BcpColData : MarshaledObject<BCPCOLDATA>
     {
-        public BcpColData(IntPtr ctx) : base(null, null, null) { }
-    }
-
-    public class TdsAuthentication : TdsObject<TDSAUTHENTICATION>
-    {
-        public TdsAuthentication(IntPtr ctx) : base(null, null, null) { }
-    }
-
-    
-    public class TdsBcpInfo : TdsObject<TDSBCPINFO>
-    {
-        public TdsBcpInfo(IntPtr ctx) : base(null, null, NativeMethods.tds_free_bcpinfo) { }
+        public BcpColData() : base(null, null, NativeMethods.tds_free_bcp_column_data) { }
 
         // tds : mem.c
-        //public void FreeBcpinfo() => NativeMethods.tds_free_bcpinfo(_ctx);
+        public void FreeBcpColumnData() => NativeMethods.tds_free_bcp_column_data(Ptr); //:Dispose
+    }
+
+    public class TdsAuthentication : MarshaledObject<TDSAUTHENTICATION>
+    {
+        public TdsAuthentication() : base(null, null, null) { }
+    }
+
+    public class TdsBcpInfo : MarshaledObject<TDSBCPINFO>
+    {
+        public TdsBcpInfo() : base(arg => NativeMethods.tds_alloc_bcpinfo(), null, NativeMethods.tds_free_bcpinfo) { }
+
+        // tds : mem.c
+        public void FreeBcpinfo() => NativeMethods.tds_free_bcpinfo(Ptr); //:Dispose
         public void DeinitBcpinfo() => NativeMethods.tds_deinit_bcpinfo(Ptr);
     }
 
-    public class TdsColumn : TdsObject<TDSCOLUMN>
+    public class TdsColumn : MarshaledObject<TDSCOLUMN>
     {
-        public TdsColumn(IntPtr ctx) : base(null, null, null) { }
+        public TdsColumn() : base(null, null, null) { }
 
         // tds : mem.c
         public IntPtr AllocParamData() => NativeMethods.tds_alloc_param_data(Ptr);
     }
 
-    public class TdsIconv : TdsObject<TDSICONV>
+    public class TdsConnection : MarshaledObject<TDSCONNECTION>
     {
-        public TdsIconv(IntPtr ctx) : base(null, null, null) { }
-    }
-
-    public class TdsConnection : TdsObject<TDSCONNECTION>
-    {
-        static TdsConnection() => Tds.Touch();
-        public TdsConnection(IntPtr ctx) : base(null, null, NativeMethods.tds_connection_close) { }
+        public TdsConnection() : base(null, null, NativeMethods.tds_connection_close) { }
 
         // tds : config.c
-        public TdsDynamic LookupDynamic(string id) { var ptr = NativeMethods.tds_lookup_dynamic(Ptr, id); return ptr != IntPtr.Zero ? new TdsDynamic(ptr) : null; }
+        public TdsDynamic LookupDynamic(string id) => NativeMethods.tds_lookup_dynamic(Ptr, id).ToMarshaledObject<TdsDynamic, TDSDYNAMIC>();
         public int GetVarintSize(int datatype) => NativeMethods.tds_get_varint_size(Ptr, datatype);
 
         // tds : iconv.c
-        public TDSRET tds_iconv_open(string charset, int use_utf16) => NativeMethods.tds_iconv_open(Ptr, charset, use_utf16);
-        public void tds_iconv_close() => NativeMethods.tds_iconv_close(Ptr);
-        public void tds_srv_charset_changed(string charset) => NativeMethods.tds_srv_charset_changed(Ptr, charset);
-        public void tds7_srv_charset_changed(int sql_collate, int lcid) => NativeMethods.tds7_srv_charset_changed(Ptr, sql_collate, lcid);
-        public int tds_iconv_alloc() => NativeMethods.tds_iconv_alloc(Ptr);
+        public TDSRET IconvOpen(string charset, int use_utf16) => NativeMethods.tds_iconv_open(Ptr, charset, use_utf16);
+        public void IconvClose() => NativeMethods.tds_iconv_close(Ptr);
+        public void SrvCharsetChanged(string charset) => NativeMethods.tds_srv_charset_changed(Ptr, charset);
+        public void SrvCharsetChanged7(int sql_collate, int lcid) => NativeMethods.tds7_srv_charset_changed(Ptr, sql_collate, lcid);
+        public int IconvAlloc() => NativeMethods.tds_iconv_alloc(Ptr);
         public void IconvFree() => NativeMethods.tds_iconv_free(Ptr);
-        public TdsIconv IconvFromCollate(string collate) { var ptr = NativeMethods.tds_iconv_from_collate(Ptr, collate); return ptr != IntPtr.Zero ? new TdsIconv(ptr) : null; }
+        public TdsIconv IconvFromCollate(string collate) => NativeMethods.tds_iconv_from_collate(Ptr, collate).ToMarshaledObject<TdsIconv, TDSICONV>();
 
         // tds : mem.c
         public void CursorDeallocated(TdsCursor cursor) => NativeMethods.tds_cursor_deallocated(Ptr, cursor.Ptr);
         public void DynamicDeallocated(TdsDynamic dyn) => NativeMethods.tds_dynamic_deallocated(Ptr, dyn.Ptr);
-        public TdsDynamic AllocDynamic(string id) => new TdsDynamic(NativeMethods.tds_alloc_dynamic(Ptr, id));
-        public TdsSocket AllocAdditionalSocket() => new TdsSocket(NativeMethods.tds_alloc_additional_socket(Ptr));
+        public TdsDynamic AllocDynamic(string id) => NativeMethods.tds_alloc_dynamic(Ptr, id).ToMarshaledObject<TdsDynamic, TDSDYNAMIC>();
+        public TdsSocket AllocAdditionalSocket() => NativeMethods.tds_alloc_additional_socket(Ptr).ToMarshaledObject<TdsSocket, TDSSOCKET>();
 
         // tds : query.c
         public int NeedsUnprepare(TdsDynamic dyn) => NativeMethods.tds_needs_unprepare(Ptr, dyn.Ptr);
@@ -121,50 +123,77 @@ namespace FreeTds
         public void SetParamType(TdsColumn curcol, TDS_SERVER_TYPE type) => NativeMethods.tds_set_param_type(Ptr, curcol.Ptr, type);
         public void SetColumnType(TdsColumn curcol, TDS_SERVER_TYPE type) => NativeMethods.tds_set_column_type(Ptr, curcol.Ptr, type);
 
-        // tds : net .c
+        // tds : net.c
         public void ConnectionClose() => NativeMethods.tds_connection_close(Ptr);
     }
 
-    public class TdsContext : TdsObject<TDSCONTEXT>
+    public class TdsContext : MarshaledObject<TDSCONTEXT>
     {
-        static TdsContext() => Tds.Touch();
+        static TdsContext() => NativeMethods.Touch();
+        public TdsContext() : base(arg => NativeMethods.tds_alloc_context(IntPtr.Zero), null, NativeMethods.tds_free_context) { }
         public TdsContext(TdsContext parent = null) : base(arg => NativeMethods.tds_alloc_context((IntPtr)arg), parent != null ? parent.Ptr : IntPtr.Zero, NativeMethods.tds_free_context) { }
 
         // tds : mem.c
-        //public void FreeContext() => NativeMethods.tds_free_context(_ctx);
-        public TdsSocket AllocSocket(uint bufsize) => new TdsSocket(NativeMethods.tds_alloc_socket(Ptr, bufsize));
+        public void FreeContext() => NativeMethods.tds_free_context(Ptr); //:Dispose
+        public TdsSocket AllocSocket(uint bufsize) => NativeMethods.tds_alloc_socket(Ptr, bufsize).ToMarshaledObject<TdsSocket, TDSSOCKET>();
+
+        // tds : util.c
+        public int Error(TdsSocket tds, int msgno, int errnum) => NativeMethods.tdserror(Ptr, tds.Ptr, msgno, errnum);
 
         // server : abc.c
-        public TdsSocket Listen(int ipPort) { var tds = NativeMethodsServer.tds_listen(Ptr, ipPort); return tds == IntPtr.Zero ? null : new TdsSocket(tds); }
+        public TdsSocket Listen(int ipPort) => NativeMethodsServer.tds_listen(Ptr, ipPort).ToMarshaledObject<TdsSocket, TDSSOCKET>();
     }
 
-    public class TdsCursor : TdsObject<TDSCURSOR>
+    public class TdsCursor : MarshaledObject<TDSCURSOR>
     {
-        public TdsCursor(IntPtr ctx) : base(null, null, null) { }
+        public TdsCursor() : base(null, null, ptr => NativeMethods.tds_release_cursor(ref ptr)) { }
 
         // tds : mem.c
-        //void tds_release_cursor(TDSCURSOR** pcursor);
+        public void ReleaseCursor() => this.WithPtr(ptr => NativeMethods.tds_release_cursor(ref ptr)); //:Dispose
     }
 
-    public class TdsDynamic : TdsObject<TDSDYNAMIC>
+    public class TdsDynamic : MarshaledObject<TDSDYNAMIC>
     {
-        public TdsDynamic(IntPtr ctx) : base(null, null, null) { }
+        public TdsDynamic() : base(null, null, ptr => NativeMethods.tds_release_dynamic(ref ptr)) { }
+
+        // tds : mem.c
+        public void FreeInputParams() => NativeMethods.tds_free_input_params(Ptr);
+        public void ReleaseDynamic() => this.WithPtr(ptr => NativeMethods.tds_release_dynamic(ref ptr)); //:Dispose
     }
 
-    public class TdsHeaders : TdsObject<TDSHEADERS>
+    public class TdsHeaders : MarshaledObject<TDSHEADERS>
     {
-        public TdsHeaders(IntPtr ctx) : base(null, null, null) { }
+        public TdsHeaders() : base(null, null, null) { }
     }
 
-    public class TdsLogin : TdsObject<TDSLOGIN>
+    public class TdsIconv : MarshaledObject<TDSICONV>
     {
-        static TdsLogin() => Tds.Touch();
+        public TdsIconv() : base(null, null, null) { }
+
+        // tds : token.c
+        public int DetermineAdjustedSize(int size) => NativeMethods.determine_adjusted_size(Ptr, size);
+    }
+
+    public class TdsLocale : MarshaledObject<TDSLOCALE>
+    {
+        public TdsLocale() : base(null, null, NativeMethods.tds_free_locale) { }
+
+        // tds : mem.c
+        public void FreeLocale() => NativeMethods.tds_free_locale(Ptr); //:Dispose
+    }
+
+    public class TdsLogin : MarshaledObject<TDSLOGIN>
+    {
+        public TdsLogin() : base(null, null, NativeMethods.tds_free_login) { }
         public TdsLogin(int useEnvironment) : base(arg => NativeMethods.tds_alloc_login((int)arg), useEnvironment, NativeMethods.tds_free_login) { }
-        public TdsLogin(IntPtr ctx) : base(null, null, NativeMethods.tds_free_login) { }
 
         // tds : config.c
         public bool ReadConfFile(string server) => NativeMethods.tds_read_conf_file(Ptr, server);
         public void FixLogin() => NativeMethods.tds_fix_login(Ptr);
+
+        // tds : mem.c
+        public void tds_free_login() => NativeMethods.tds_free_login(Ptr); //:Dispose
+        public TdsLogin InitLogin(TdsLocale locale) => NativeMethods.tds_init_login(Ptr, locale.Ptr).ToMarshaledObject<TdsLogin, TDSLOGIN>();
 
         // tds : login.c
         public void SetPacket(int packet_size) => NativeMethods.tds_set_packet(Ptr, packet_size);
@@ -181,62 +210,78 @@ namespace FreeTds
         public void SetVersion(byte major_ver, byte minor_ver) => NativeMethods.tds_set_version(Ptr, major_ver, minor_ver);
     }
 
-    public class TdsMultiple : TdsObject<TDSMULTIPLE>
+    public class TdsMessage : MarshaledObject<TDSMESSAGE>
     {
-        public TdsMultiple(IntPtr ctx) : base(null, null, null) { }
+        public TdsMessage() : base(null, null, NativeMethods.tds_free_msg) { }
+
+        // tds : mem.c
+        public void FreeMsg() => NativeMethods.tds_free_msg(Ptr); //:Dispose
     }
 
-    public class TdsObject<T> : IDisposable where T : struct
+    public class TdsMultiple : MarshaledObject<TDSMULTIPLE>
     {
-        internal protected IntPtr Ptr;
-        readonly Action<IntPtr> _free;
-
-        public TdsObject(Func<object, IntPtr> @new, object newArg, Action<IntPtr> free, IntPtr? ptr = null)
-        {
-            Ptr = ptr ?? @new(newArg);
-            if (Ptr == IntPtr.Zero)
-                throw new ArgumentNullException(nameof(Ptr));
-            _free = free;
-            Value = Marshal.PtrToStructure<T>(Ptr);
-        }
-        ~TdsObject() => Dispose();
-
-        public void Dispose()
-        {
-            if (Ptr == IntPtr.Zero)
-                return;
-            _free(Ptr);
-            Ptr = IntPtr.Zero;
-        }
-
-        public T Value;
+        public TdsMultiple() : base(null, null, null) { }
     }
 
-    public class TdsResultInfo : TdsObject<TDSRESULTINFO>
+    public class TdsPacket : MarshaledObject<TDSPACKET>
     {
-        public TdsResultInfo(IntPtr ctx) : base(null, null, null) { }
+        public TdsPacket() : base(null, null, NativeMethods.tds_free_packets) { }
+
+        // tds : mem.c
+        public TdsPacket ReallocPacket(uint len) => NativeMethods.tds_realloc_packet(Ptr, len).ToMarshaledObject<TdsPacket, TDSPACKET>();
+        public void FreePackets() => NativeMethods.tds_free_packets(Ptr); //:Dispose
+    }
+
+    public class TdsResultInfo : MarshaledObject<TDSRESULTINFO>
+    {
+        public TdsResultInfo() : base(null, null, null) { }
 
         // tds : config.c
         public TDSRET AllocRow() => NativeMethods.tds_alloc_row(Ptr);
+
+        // tds : mem.c
+        public void FreeResults() => NativeMethods.tds_free_results(Ptr);
+        public void FreeRow(byte[] row) => NativeMethods.tds_free_row(Ptr, row);
+        public void DetachResults() => NativeMethods.tds_detach_results(Ptr);
+    }
+
+    public class TdsComputeInfo : TdsResultInfo
+    {
+        // tds : config.c
         public TDSRET AllocComputeRow() => NativeMethods.tds_alloc_compute_row(Ptr);
     }
 
-    public class TdsSocket : TdsObject<TDSSOCKET>
+    public class TdsParamInfo : TdsResultInfo
     {
+        // tds : mem.c
+        public void FreeParamResults() => NativeMethods.tds_free_param_results(Ptr);
+        public void FreeParamResult() => NativeMethods.tds_free_param_result(Ptr);
+        public TdsParamInfo AllocParamResult() => NativeMethods.tds_alloc_param_result(Ptr).ToMarshaledObject<TdsParamInfo, TDSRESULTINFO>();
+    }
+
+    public class TdsSocket : MarshaledObject<TDSSOCKET>
+    {
+        public TdsSocket() : base(null, null, NativeMethods.tds_free_socket) { }
         public TdsSocket(TdsContext ctx, int bufSize) : base(arg => NativeMethods.tds_alloc_socket(ctx.Ptr, (uint)arg), bufSize, NativeMethods.tds_free_socket) { }
-        public TdsSocket(IntPtr ctx) : base(null, null, NativeMethods.tds_free_socket) { }
+
+        public TDS_PACKET_TYPE out_flag
+        {
+            get => Value.out_flag;
+            set { }
+        }
 
         // tds : config.c
-        public TdsLogin ReadConfigInfo(TdsLogin login, TDSLOCALE locale) { var ptr = NativeMethods.tds_read_config_info(Ptr, login.Ptr, ref locale); return ptr != IntPtr.Zero ? new TdsLogin(ptr) : null; }
+        public TdsLogin ReadConfigInfo(TdsLogin login, TDSLOCALE locale) => NativeMethods.tds_read_config_info(Ptr, login.Ptr, ref locale).ToMarshaledObject<TdsLogin, TDSLOGIN>();
 
         // tds : mem.c
+        public void FreeSocket() => NativeMethods.tds_free_socket(Ptr); //:Dispose
         public void FreeAllResults() => NativeMethods.tds_free_all_results(Ptr);
-        public object AllocComputeResults(ushort num_cols, ushort by_cols) { var ptr = NativeMethods.tds_alloc_compute_results(Ptr, num_cols, by_cols); throw new NotImplementedException(); }
+        public TdsComputeInfo[] AllocComputeResults(ushort num_cols, ushort by_cols) { var ptr = NativeMethods.tds_alloc_compute_results(Ptr, num_cols, by_cols); throw new NotImplementedException(); }
         public void ReleaseCurDyn() => NativeMethods.tds_release_cur_dyn(this);
         public void SetCurDyn(TdsDynamic dyn) => NativeMethods.tds_set_cur_dyn(Ptr, dyn.Ptr);
-        public TdsSocket ReallocSocket(int bufsize) { var ptr = NativeMethods.tds_realloc_socket(Ptr, (Size_t)bufsize); return ptr != IntPtr.Zero ? new TdsSocket(ptr) : null; }
+        public TdsSocket ReallocSocket(int bufsize) => NativeMethods.tds_realloc_socket(Ptr, (Size_t)bufsize).ToMarshaledObject<TdsSocket, TDSSOCKET>();
         public string AllocLookupSqlstate(int msgno) => NativeMethods.tds_alloc_lookup_sqlstate(Ptr, msgno);
-        public TdsCursor AllocCursor(string name, string query) { var ptr = NativeMethods.tds_alloc_cursor(Ptr, name, name.Length, query, query.Length); return ptr != IntPtr.Zero ? new TdsCursor(ptr) : null; }
+        public TdsCursor AllocCursor(string name, string query) => NativeMethods.tds_alloc_cursor(Ptr, name, name.Length, query, query.Length).ToMarshaledObject<TdsCursor, TDSCURSOR>();
         public void SetCurrentResults(TdsResultInfo info) => NativeMethods.tds_set_current_results(Ptr, info.Ptr);
 
         // tds : login.c
@@ -256,14 +301,14 @@ namespace FreeTds
         public TDSRET SubmitUnprepare(TdsDynamic dyn) => NativeMethods.tds_submit_unprepare(Ptr, dyn.Ptr);
         public TDSRET SubmitRpc(string rpc_name, TdsParamInfo @params, TdsHeaders head) => NativeMethods.tds_submit_rpc(Ptr, rpc_name, @params.Ptr, head.Ptr);
         public TDSRET SubmitOptioncmd(TDS_OPTION_CMD command, TDS_OPTION option, TDS_OPTION_ARG @param, int param_size) => NativeMethods.tds_submit_optioncmd(Ptr, command, option, ref @param, param_size);
-        public TDSRET tds_submit_begin_tran() => NativeMethods.tds_submit_begin_tran(Ptr);
-        public TDSRET tds_submit_rollback(int cont) => NativeMethods.tds_submit_rollback(Ptr, cont);
-        public TDSRET tds_submit_commit(int cont) => NativeMethods.tds_submit_commit(Ptr, cont);
-        public TDSRET tds_disconnect() => NativeMethods.tds_disconnect(Ptr);
+        public TDSRET SubmitBeginTran() => NativeMethods.tds_submit_begin_tran(Ptr);
+        public TDSRET SubmitRollback(int cont) => NativeMethods.tds_submit_rollback(Ptr, cont);
+        public TDSRET SubmitCommit(int cont) => NativeMethods.tds_submit_commit(Ptr, cont);
+        public TDSRET Disconnect() => NativeMethods.tds_disconnect(Ptr);
         public int QuoteId(byte[] buffer, string id) => (int)NativeMethods.tds_quote_id(Ptr, buffer, id, id.Length);
         public int QuoteString(byte[] buffer, string str) => (int)NativeMethods.tds_quote_string(Ptr, buffer, str, str.Length);
-        public int tds_fix_column_size(TdsColumn curcol) => (int)NativeMethods.tds_fix_column_size(Ptr, curcol.Ptr);
-        //public string ConvertString(TDSICONV char_conv, string s, int len, out int out_len) => NativeMethods.tds_convert_string(_ctx, char_conv, s, len, out out_len);
+        public int FixColumnSize(TdsColumn curcol) => (int)NativeMethods.tds_fix_column_size(Ptr, curcol.Ptr);
+        public string ConvertString(TdsIconv char_conv, string s, int len, out int out_len) { var r = NativeMethods.tds_convert_string(Ptr, char_conv.Ptr, s, len, out var out_len_); out_len = (int)out_len_; return r; }
         public TDSRET GetColumnDeclaration(TdsColumn curcol, out string @out) => NativeMethods.tds_get_column_declaration(Ptr, curcol.Ptr, out @out);
         //
         public TDSRET CursorDeclare(TdsCursor cursor, TdsParamInfo @params, out int send) => NativeMethods.tds_cursor_declare(Ptr, cursor.Ptr, @params.Ptr, out send);
@@ -317,7 +362,7 @@ namespace FreeTds
         public long GetInt8() => NativeMethods.tds_get_int8(Ptr);
         public int GetString(out string value) => throw new NotImplementedException(); //var r = NativeMethods.tds_get_string(_ctx, 100, );
         public TDSRET GetCharData(out string dest, int wire_size, TdsColumn curcol) => throw new NotImplementedException(); // NativeMethods.tds_get_char_data(_ctx);
-        public bool tds_get_n(out byte[] dest, int n) => NativeMethods.tds_get_n(Ptr, out dest, (Size_t)n);
+        public bool GetN(out byte[] dest, int n) => NativeMethods.tds_get_n(Ptr, out dest, (Size_t)n);
         string DstrGet() => throw new NotImplementedException(); //NativeMethods.tds_dstr_get(_ctx);
 
         // tds : util.c
@@ -336,22 +381,22 @@ namespace FreeTds
         public int ReadPacket() => NativeMethods.tds_read_packet(Ptr);
         public TDSRET WritePacket(byte final) => NativeMethods.tds_write_packet(Ptr, final);
 #if ENABLE_ODBC_MARS
-        public int AppendCancel() => NativeMethods.tds_append_cancel(_ctx);
-        public TDSRET AppendFin() => NativeMethods.tds_append_fin(_ctx);
+        public int AppendCancel() => NativeMethods.tds_append_cancel(Ptr);
+        public TDSRET AppendFin() => NativeMethods.tds_append_fin(Ptr);
 #else
         public int tds_put_cancel() => NativeMethods.tds_put_cancel(Ptr);
 #endif
 
         // tds : challenge.c
 #if !HAVE_SSPI
-        TdsAuthentication tds_ntlm_get_auth() { var ptr = NativeMethods.tds_ntlm_get_auth(Ptr); return ptr != IntPtr.Zero ? new TdsAuthentication(Ptr) : null; }
-        TdsAuthentication tds_gss_get_auth() { var ptr = NativeMethods.tds_gss_get_auth(Ptr); return ptr != IntPtr.Zero ? new TdsAuthentication(Ptr) : null; }
+        TdsAuthentication tds_ntlm_get_auth() => NativeMethods.tds_ntlm_get_auth(Ptr).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
+        TdsAuthentication tds_gss_get_auth() => NativeMethods.tds_gss_get_auth(Ptr).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
 #else
-        TdsAuthentication tds_sspi_get_auth() { var ptr = NativeMethods.tds_sspi_get_auth(_ctx); return ptr != IntPtr.Zero ? new TdsAuthentication(_ctx) : null; }
+        TdsAuthentication tds_sspi_get_auth() => NativeMethods.tds_sspi_get_auth(_ctx).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
 #endif
 
         // tds : sec_negotiate.c
-        public TdsAuthentication NegotiateGetAuth5() { var ptr = NativeMethods.tds5_negotiate_get_auth(Ptr); return ptr != IntPtr.Zero ? new TdsAuthentication(Ptr) : null; }
+        public TdsAuthentication NegotiateGetAuth5() => NativeMethods.tds5_negotiate_get_auth(Ptr).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
         public void NegotiateSetMsgType5(TdsAuthentication auth, uint msg_type) => NativeMethods.tds5_negotiate_set_msg_type(Ptr, auth.Ptr, msg_type);
 
         // tds : bulk.c
@@ -371,9 +416,9 @@ namespace FreeTds
 
 
         // server : login.c
-        public int ReadLogin(out TdsLogin login) { var r = NativeMethodsServer.tds_read_login(Ptr, out var loginPtr); login = new TdsLogin(loginPtr); return r; }
-        public int ReadLogin7(out TdsLogin login) { var r = NativeMethodsServer.tds7_read_login(Ptr, out var loginPtr); login = new TdsLogin(loginPtr); return r; }
-        public TdsLogin AllocReadLogin() { var ptr = NativeMethodsServer.tds_alloc_read_login(Ptr); return ptr != IntPtr.Zero ? new TdsLogin(ptr) : null; }
+        public int ReadLogin(out TdsLogin login) { var r = NativeMethodsServer.tds_read_login(Ptr, out var loginPtr); login = new TdsLogin { Ptr = loginPtr }; return r; }
+        public int ReadLogin7(out TdsLogin login) { var r = NativeMethodsServer.tds7_read_login(Ptr, out var loginPtr); login = new TdsLogin { Ptr = loginPtr }; return r; }
+        public TdsLogin AllocReadLogin() => NativeMethodsServer.tds_alloc_read_login(Ptr).ToMarshaledObject<TdsLogin, TDSLOGIN>();
 
         // server : query.c
         public string GetQuery() => NativeMethodsServer.tds_get_query(Ptr);

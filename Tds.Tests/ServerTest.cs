@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace FreeTds
 {
@@ -15,31 +17,39 @@ namespace FreeTds
                 Console.WriteLine("pass {0}", login.password);
                 Console.WriteLine("app  {0}", login.app_name);
                 Console.WriteLine("srvr {0}", login.server_name);
-                Console.WriteLine("vers {0}.{0}", G.TDS_MAJOR(ref login), G.TDS_MINOR(ref login));
+                Console.WriteLine("vers {0}.{0}", G.TDS_MAJOR(login), G.TDS_MINOR(login));
                 Console.WriteLine("lib  {0}", login.library);
                 Console.WriteLine("lang {0}", login.language);
                 Console.WriteLine("char {0}", login.server_charset);
                 Console.WriteLine("bsiz {0}", login.block_size);
             }
 
+            var connection = Task.Run(() =>
+            {
+                using (var conn = new SqlConnection("Server=tcp:localhost,1433;user=guest;pwd=sysbase"))
+                using (var com = new SqlCommand("Select * From Table", conn))
+                {
+                    conn.Open();
+                    com.ExecuteNonQuery();
+                }
+            });
+            //
             using (var ctx = new TdsContext())
             {
                 var tds = ctx.Listen(1433);
                 if (tds == null)
                     return;
-                //get_incoming(tds.Value.s);
+                var tdsValue = tds.Value;
+                //get_incoming(tdsValue.s);
                 using (var login = tds.AllocReadLogin())
                 {
                     if (login == null)
-                    {
-                        Console.WriteLine("Error reading login");
-                        return;
-                    }
+                        throw new Exception("Error reading login");
                     var loginValue = login.Value;
                     dump_login(ref loginValue);
                     if (loginValue.user_name == "guest" && loginValue.password == "sybase")
                     {
-                        tds.Value.out_flag = TDS_PACKET_TYPE.TDS_REPLY;
+                        tds.out_flag = TDS_PACKET_TYPE.TDS_REPLY;
                         tds.EnvChange(P.TDS_ENV_DATABASE, "master", "pubs2");
                         tds.SendMsg(5701, 2, 10, "Changed database context to 'pubs2'.", "JDBC", "ZZZZZ", 1);
                         if (!loginValue.suppress_language)
@@ -50,8 +60,8 @@ namespace FreeTds
                         tds.EnvChange(P.TDS_ENV_PACKSIZE, null, "512");
                         //* TODO set mssql if tds7+ */
                         tds.SendLoginAck("sql server");
-                        if (G.IS_TDS50(ref tds.Value.conn))
-                            tds.SendCapabilitiesToken();
+                        //if (G.IS_TDS50(tds.Value.conn))
+                        //    tds.SendCapabilitiesToken();
                         tds.SendDoneToken(0, 1);
                     }
                     else
@@ -60,7 +70,7 @@ namespace FreeTds
                 }
                 /* printf("incoming packet %d\n", tds_read_packet(tds)); */
                 Console.WriteLine("query : {0}", tds.GetGenericQuery());
-                tds.Value.out_flag = TDS_PACKET_TYPE.TDS_REPLY;
+                tds.out_flag = TDS_PACKET_TYPE.TDS_REPLY;
                 //    resinfo = tds_alloc_results(1);
                 //    resinfo->columns[0]->column_type = SYBVARCHAR;
                 //    resinfo->columns[0]->column_size = 30;

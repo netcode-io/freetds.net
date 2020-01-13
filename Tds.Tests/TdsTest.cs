@@ -7,7 +7,7 @@ namespace FreeTds
         [Test]
         public void TestCompiletimeSettings()
         {
-            var settings = TdsConfig.GetCompiletimeSettings();
+            var settings = Tds.GetCompiletimeSettings();
             Assert.AreEqual("auto", settings.tdsver);
         }
     }
