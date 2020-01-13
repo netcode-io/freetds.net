@@ -18,21 +18,21 @@ if(WIN32)
       )
    endif()
 
-   # install freetds:x86-windows
-   if (NOT IS_DIRECTORY ${VCPKG}/packages/freetds_x86-windows)
-      execute_process(
-         COMMAND vcpkg install freetds:x86-windows
-         WORKING_DIRECTORY ${VCPKG}
-      )
-   endif()
-   # generate tds.def
-   if (NOT EXISTS ${VCPKG}/packages/freetds_x86-windows/lib/tds.def)
-      message("x86 tds.def. generating...")
-      execute_process(
-         COMMAND dotnet run --project ./DefGen x86 ${VCPKG}/packages/freetds_x86-windows/lib/tds.lib ${VCPKG}/packages/freetds_x86-windows/lib/tdssrv.lib
-         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      )
-   endif()
+   ## install freetds:x86-windows
+   #if (NOT IS_DIRECTORY ${VCPKG}/packages/freetds_x86-windows)
+   #   execute_process(
+   #      COMMAND vcpkg install freetds:x86-windows
+   #      WORKING_DIRECTORY ${VCPKG}
+   #   )
+   #endif()
+   ## generate tds.def
+   #if (NOT EXISTS ${VCPKG}/packages/freetds_x86-windows/lib/tds.def)
+   #   message("x86 tds.def. generating...")
+   #   execute_process(
+   #      COMMAND dotnet run --project ./DefGen x86 ${VCPKG}/packages/freetds_x86-windows/lib/tds.lib ${VCPKG}/packages/freetds_x86-windows/lib/tdssrv.lib
+   #      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+   #   )
+   #endif()
 
    # install freetds:x64-windows
    if (NOT IS_DIRECTORY ${VCPKG}/packages/freetds_x64-windows)

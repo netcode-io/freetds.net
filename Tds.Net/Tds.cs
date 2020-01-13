@@ -9,6 +9,7 @@ namespace FreeTds
     public static class Tds
     {
         static Tds() => NativeMethods.Touch();
+
         // tds : config.c
         public static TDS_COMPILETIME_SETTINGS GetCompiletimeSettings() => Marshal.PtrToStructure<TDS_COMPILETIME_SETTINGS>(NativeMethods.tds_get_compiletime_settings());
         public delegate void TdsConfParse(string option, string value, object param);
@@ -59,6 +60,51 @@ namespace FreeTds
         public static void SwapBytes(byte[] buf, int bytes) => NativeMethods.tds_swap_bytes(buf, bytes);
         public static uint GettimeMs() => NativeMethods.tds_gettime_ms();
         public static string Strndup(byte[] s, IntPtr len) => NativeMethods.tds_strndup(s, len);
+
+        // tds : log.c
+        public static void DumpOff() => NativeMethods.tdsdump_off();
+        public static void DumpOn() => NativeMethods.tdsdump_on();
+        public static int DumpIsopen() => NativeMethods.tdsdump_isopen();
+        public static int DumpOpen(string filename) => NativeMethods.tdsdump_open(filename);
+        public static void DumpClose() => NativeMethods.tdsdump_close();
+        public static void DumpDumpBuf(string file, uint levelLine, string msg, byte[] buf, int length) => NativeMethods.tdsdump_dump_buf(file, levelLine, msg, buf, (Size_t)length);
+        //public static void tdsdump_col(TDSCOLUMN col) => NativeMethods.tdsdump_close();
+        //void tdsdump_log(string file, uint level_line, string fmt, ...);
+        //#define TDSDUMP_LOG_FAST if (TDS_UNLIKELY(tds_write_dump)) tdsdump_log
+        //#define tdsdump_log TDSDUMP_LOG_FAST
+        //#define TDSDUMP_BUF_FAST if (TDS_UNLIKELY(tds_write_dump)) tdsdump_dump_buf
+        //#define tdsdump_dump_buf TDSDUMP_BUF_FAST
+        //extern int tds_write_dump;
+        //extern int tds_debug_flags;
+        //extern int tds_g_append_mode;
+
+        // tds : net.c
+        public static int GetInstancePorts7(IntPtr output, IntPtr addr) => NativeMethods.tds7_get_instance_ports(output, addr);
+        public static int GetInstancePort7(IntPtr addr, string instance) => NativeMethods.tds7_get_instance_port(addr, instance);
+        public static string Prwsaerror(int erc) => NativeMethods.tds_prwsaerror(erc);
+        public static void PrwsaerrorFree(string s) => NativeMethods.tds_prwsaerror_free(s);
+        //public static TDSSELREAD() => NativeMethods.TDSSELREAD();
+        //public static TDSSELWRITE() => NativeMethods.TDSSELWRITE();
+        public static void SocketFlush(IntPtr sock) => NativeMethods.tds_socket_flush(sock);
+        public static int SocketSetNonblocking(IntPtr sock) => NativeMethods.tds_socket_set_nonblocking(sock);
+        public static int WakeupInit(TDSPOLLWAKEUP wakeup) => NativeMethods.tds_wakeup_init(ref wakeup);
+        public static void WakeupClose(TDSPOLLWAKEUP wakeup) => NativeMethods.tds_wakeup_close(ref wakeup);
+        public static void WakeupSend(TDSPOLLWAKEUP wakeup, char cancel) => NativeMethods.tds_wakeup_send(ref wakeup, cancel);
+        public static IntPtr WakeupGetFd(TDSPOLLWAKEUP wakeup) => NativeMethods.tds_wakeup_get_fd(ref wakeup);
+
+        // tds : vstrbuild.c
+        public static TDSRET Vstrbuild(byte[] buffer, ref int resultLen, string text, string formats, params object[] ap) => NativeMethods.tds_vstrbuild(buffer, buffer.Length, ref resultLen, text, text.Length, formats, formats.Length, IntPtr.Zero);
+
+        // tds : numeric.c
+        public static string MoneyToString(TDS_MONEY money, string s, bool use2Digits) => NativeMethods.tds_money_to_string(ref money, s, use2Digits);
+        public static int NumericToString(TDS_NUMERIC numeric, string s) => NativeMethods.tds_numeric_to_string(ref numeric, s);
+        public static int NumericChangePrecScale(TDS_NUMERIC numeric, byte newPrec, byte newScale) => NativeMethods.tds_numeric_change_prec_scale(ref numeric, newPrec, newScale);
+
+        // tds : getmac.c
+        public static void Getmac(IntPtr s, byte[] mac) => NativeMethods.tds_getmac(s, mac); //:TDS_SYS_SOCKET
+
+        // tds : random.c
+        public static void RandomBuffer(byte[] @out) => NativeMethods.tds_random_buffer(@out, @out.Length);
     }
 
     public class BcpColData : MarshaledObject<BCPCOLDATA>
@@ -135,13 +181,13 @@ namespace FreeTds
 
         // tds : mem.c
         public void FreeContext() => NativeMethods.tds_free_context(Ptr); //:Dispose
-        public TdsSocket AllocSocket(uint bufsize) => NativeMethods.tds_alloc_socket(Ptr, bufsize).ToMarshaledObject<TdsSocket, TDSSOCKET>();
+        public TdsSocket AllocSocket(uint bufsize = 4096) => NativeMethods.tds_alloc_socket(Ptr, bufsize).ToMarshaledObject<TdsSocket, TDSSOCKET>();
 
         // tds : util.c
         public int Error(TdsSocket tds, int msgno, int errnum) => NativeMethods.tdserror(Ptr, tds.Ptr, msgno, errnum);
 
-        // server : abc.c
-        public TdsSocket Listen(int ipPort) => NativeMethodsServer.tds_listen(Ptr, ipPort).ToMarshaledObject<TdsSocket, TDSSOCKET>();
+        // server : login.c
+        public TdsSocket Listen(int ipPort = 1433) => NativeMethodsServer.tds_listen(Ptr, ipPort).ToMarshaledObject<TdsSocket, TDSSOCKET>();
     }
 
     public class TdsCursor : MarshaledObject<TDSCURSOR>
@@ -262,7 +308,7 @@ namespace FreeTds
     public class TdsSocket : MarshaledObject<TDSSOCKET>
     {
         public TdsSocket() : base(null, null, NativeMethods.tds_free_socket) { }
-        public TdsSocket(TdsContext ctx, int bufSize) : base(arg => NativeMethods.tds_alloc_socket(ctx.Ptr, (uint)arg), bufSize, NativeMethods.tds_free_socket) { }
+        public TdsSocket(TdsContext ctx, int bufSize = 4096) : base(arg => NativeMethods.tds_alloc_socket(ctx.Ptr, (uint)arg), bufSize, NativeMethods.tds_free_socket) { }
 
         public TDS_PACKET_TYPE out_flag
         {
@@ -384,15 +430,15 @@ namespace FreeTds
         public int AppendCancel() => NativeMethods.tds_append_cancel(Ptr);
         public TDSRET AppendFin() => NativeMethods.tds_append_fin(Ptr);
 #else
-        public int tds_put_cancel() => NativeMethods.tds_put_cancel(Ptr);
+        public int PutCancel() => NativeMethods.tds_put_cancel(Ptr);
 #endif
 
         // tds : challenge.c
 #if !HAVE_SSPI
-        TdsAuthentication tds_ntlm_get_auth() => NativeMethods.tds_ntlm_get_auth(Ptr).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
-        TdsAuthentication tds_gss_get_auth() => NativeMethods.tds_gss_get_auth(Ptr).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
+        TdsAuthentication NtlmGetAuth() => NativeMethods.tds_ntlm_get_auth(Ptr).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
+        TdsAuthentication GssGetAuth() => NativeMethods.tds_gss_get_auth(Ptr).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
 #else
-        TdsAuthentication tds_sspi_get_auth() => NativeMethods.tds_sspi_get_auth(_ctx).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
+        TdsAuthentication SspiGetAuth() => NativeMethods.tds_sspi_get_auth(_ctx).ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
 #endif
 
         // tds : sec_negotiate.c
@@ -400,7 +446,7 @@ namespace FreeTds
         public void NegotiateSetMsgType5(TdsAuthentication auth, uint msg_type) => NativeMethods.tds5_negotiate_set_msg_type(Ptr, auth.Ptr, msg_type);
 
         // tds : bulk.c
-        public TDSRET tds_bcp_init(TdsBcpInfo bcpinfo) => NativeMethods.tds_bcp_init(Ptr, bcpinfo.Ptr);
+        public TDSRET BcpInit(TdsBcpInfo bcpinfo) => NativeMethods.tds_bcp_init(Ptr, bcpinfo.Ptr);
         public delegate TDSRET BcpGetColData(TdsBcpInfo bulk, TdsColumn bcpcol, int offset);
         public delegate void BcpNullError(TdsBcpInfo bulk, int index, int offset);
         public TDSRET BcpSendRecord(TdsBcpInfo bcpinfo, BcpGetColData getColData, BcpNullError nullError, int offset) => NativeMethods.tds_bcp_send_record(Ptr, bcpinfo.Ptr, (a, b, c) => getColData(null, null, c), (a, b, c) => nullError(null, b, c), offset);

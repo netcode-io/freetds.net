@@ -154,6 +154,8 @@ namespace FreeTds
             where T : MarshaledObject<TStruct>, new()
             where TStruct : struct
             => ptr != IntPtr.Zero ? new T { Ptr = ptr } : null;
+
+        public static T[] PtrToArray<T>(this IntPtr ptr, int count) => new[] { default(T) };
     }
 
     public class MarshaledObject<TStruct> : IDisposable where TStruct : struct

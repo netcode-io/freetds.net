@@ -15,19 +15,33 @@ if os.ishost "windows" then
         trigger     = "native",
         description = "Build the native FreeTDS library",
         execute = function ()
-             os.execute "mkdir _build32 & pushd _build32 \z
- && cmake -G \"Visual Studio 15 2017\" -DBITNESS=\"x86\" ..\\ \z
- && popd \z
- && mkdir _build64 & pushd _build64 \z
+             os.execute "mkdir _build64 & pushd _build64 \z
  && cmake -G \"Visual Studio 15 2017 Win64\" -DBITNESS=\"x64\" ..\\ \z
  && popd \z
- && cmake --build _build32 --config Release \z
- && copy _build32\\Release\\tds.dll Tds.Net\\x86 \z
- && copy _vcpkg\\packages\\openssl-windows_x86-windows\\bin\\*.dll Tds.Net\\x86 \z
  && cmake --build _build64 --config Release \z
  && copy _build64\\Release\\tds.dll Tds.Net\\x64 \z
  && copy _vcpkg\\packages\\openssl-windows_x64-windows\\bin\\*.dll Tds.Net\\x64"
         end
+    }
+
+    newaction
+    {
+        trigger     = "native_",
+        description = "Build the native FreeTDS library",
+        execute = function ()
+            os.execute "mkdir _build32 & pushd _build32 \z
+&& cmake -G \"Visual Studio 15 2017\" -DBITNESS=\"x86\" ..\\ \z
+&& popd \z
+&& mkdir _build64 & pushd _build64 \z
+&& cmake -G \"Visual Studio 15 2017 Win64\" -DBITNESS=\"x64\" ..\\ \z
+&& popd \z
+&& cmake --build _build32 --config Release \z
+&& copy _build32\\Release\\tds.dll Tds.Net\\x86 \z
+&& copy _vcpkg\\packages\\openssl-windows_x86-windows\\bin\\*.dll Tds.Net\\x86 \z
+&& cmake --build _build64 --config Release \z
+&& copy _build64\\Release\\tds.dll Tds.Net\\x64 \z
+&& copy _vcpkg\\packages\\openssl-windows_x64-windows\\bin\\*.dll Tds.Net\\x64"
+       end
     }
 
 else

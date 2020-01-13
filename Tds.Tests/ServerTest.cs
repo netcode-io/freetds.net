@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Data.SqlClient;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace FreeTds
@@ -26,7 +27,7 @@ namespace FreeTds
 
             var connection = Task.Run(() =>
             {
-                using (var conn = new SqlConnection("Server=tcp:localhost,1433;user=guest;pwd=sysbase"))
+                using (var conn = new SqlConnection("Data Source=tcp:localhost,1433;Initial Catalog=AdventureWorks;MultipleActiveResultSets=True;user=guest;pwd=sysbase"))
                 using (var com = new SqlCommand("Select * From Table", conn))
                 {
                     conn.Open();
@@ -34,17 +35,17 @@ namespace FreeTds
                 }
             });
             //
+            Tds.DumpOpen(@"C:\T_\dump.log");
             using (var ctx = new TdsContext())
             {
-                var tds = ctx.Listen(1433);
-                if (tds == null)
-                    return;
-                var tdsValue = tds.Value;
-                //get_incoming(tdsValue.s);
-                using (var login = tds.AllocReadLogin())
+                var tds = ctx.Listen() ?? throw new Exception("Error Listening");
+                var dead = G.IS_TDSDEAD(tds.Value);
+                var packet = tds.ReadPacket();
+                //get_incoming(tds.Value.s);
+                NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A0: {tds.Value.out_flag}\n");
+                using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
                 {
-                    if (login == null)
-                        throw new Exception("Error reading login");
+                    NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A1: {tds.Value.out_flag}\n");
                     var loginValue = login.Value;
                     dump_login(ref loginValue);
                     if (loginValue.user_name == "guest" && loginValue.password == "sybase")
