@@ -1890,7 +1890,7 @@ namespace FreeTds
         public static int TDS_MINOR(TDSLOGIN x) => x.tds_version & 0xff;
         public static int TDS_MINOR(TDSCONNECTION x) => x.tds_version & 0xff;
 
-        public static bool IS_TDSDEAD(TDSSOCKET? x) => x == null || x.Value.state == TDS_STATE.TDS_DEAD;
+        public static int IS_TDSDEAD(TDSSOCKET? x) => (x == null || x.Value.state == TDS_STATE.TDS_DEAD) ? 1 : 0;
 
         /// <summary>
         /// Check if product is Sybase (such as Adaptive Server Enterrprice). x should be a TDSSOCKET*.

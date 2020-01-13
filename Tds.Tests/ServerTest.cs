@@ -42,10 +42,10 @@ namespace FreeTds
                 var dead = G.IS_TDSDEAD(tds.Value);
                 var packet = tds.ReadPacket();
                 //get_incoming(tds.Value.s);
-                NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A0: {tds.Value.out_flag}\n");
+                NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A0: {tds.Value.state}\n");
                 using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
                 {
-                    NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A1: {tds.Value.out_flag}\n");
+                    NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A1: {tds.Value.state}\n");
                     var loginValue = login.Value;
                     dump_login(ref loginValue);
                     if (loginValue.user_name == "guest" && loginValue.password == "sybase")
