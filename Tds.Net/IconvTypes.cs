@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace FreeTds
+﻿namespace FreeTds
 {
     public struct TDSICONV
     {

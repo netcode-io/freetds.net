@@ -179,6 +179,30 @@ namespace FreeTds
         public TdsContext() : base(arg => NativeMethods.tds_alloc_context(IntPtr.Zero), null, NativeMethods.tds_free_context) { }
         public TdsContext(TdsContext parent = null) : base(arg => NativeMethods.tds_alloc_context((IntPtr)arg), parent != null ? parent.Ptr : IntPtr.Zero, NativeMethods.tds_free_context) { }
 
+        //public delegate int MsgHandler_t(TdsContext ctx, TdsSocket s, TdsMessage msg); //:TDSCONTEXT:TDSSOCKET:TDSMESSAGE
+        //public delegate int ErrHandler_t(TdsContext ctx, TdsSocket s, TdsMessage msg); //:TDSCONTEXT:TDSSOCKET:TDSMESSAGE
+        //public delegate int IntHandler_t(IntPtr a);
+        public TDSCONTEXT.msg_handler_t MsgHandler
+        {
+            get => Value.msg_handler;
+            set => Marshal.WriteIntPtr(Ptr, Marshal.OffsetOf<TDSCONTEXT>("msg_handler").ToInt32(), Marshal.GetFunctionPointerForDelegate(value));
+        }
+        public TDSCONTEXT.err_handler_t ErrHandler
+        {
+            get => Value.err_handler;
+            set => Marshal.WriteIntPtr(Ptr, Marshal.OffsetOf<TDSCONTEXT>("err_handler").ToInt32(), Marshal.GetFunctionPointerForDelegate(value));
+        }
+        public TDSCONTEXT.int_handler_t IntHandler
+        {
+            get => Value.int_handler;
+            set => Marshal.WriteIntPtr(Ptr, Marshal.OffsetOf<TDSCONTEXT>("int_handler").ToInt32(), Marshal.GetFunctionPointerForDelegate(value));
+        }
+        public bool MoneyUse2Digits
+        {
+            get => Value.money_use_2_digits;
+            set => Marshal.WriteByte(Ptr + Marshal.OffsetOf<TDSCONTEXT>("money_use_2_digits").ToInt32(), value ? (byte)1 : (byte)0);
+        }
+
         // tds : mem.c
         public void FreeContext() => NativeMethods.tds_free_context(Ptr); //:Dispose
         public TdsSocket AllocSocket(uint bufsize = 4096) => NativeMethods.tds_alloc_socket(Ptr, bufsize).ToMarshaledObject<TdsSocket, TDSSOCKET>();
@@ -187,7 +211,7 @@ namespace FreeTds
         public int Error(TdsSocket tds, int msgno, int errnum) => NativeMethods.tdserror(Ptr, tds.Ptr, msgno, errnum);
 
         // server : login.c
-        public TdsSocket Listen(int ipPort = 1433) => NativeMethodsServer.tds_listen(Ptr, ipPort).ToMarshaledObject<TdsSocket, TDSSOCKET>();
+        public TdsSocket Listen(int ipPort = 1433) { var r = NativeMethodsServer.tds_listen(Ptr, ipPort).ToMarshaledObject<TdsSocket, TDSSOCKET>(); r.SetState(TDS_STATE.TDS_IDLE); return r; }
     }
 
     public class TdsCursor : MarshaledObject<TDSCURSOR>
@@ -280,7 +304,10 @@ namespace FreeTds
 
     public class TdsResultInfo : MarshaledObject<TDSRESULTINFO>
     {
-        public TdsResultInfo() : base(null, null, null) { }
+        public TdsResultInfo() : base(null, null, NativeMethods.tds_free_results) { }
+        public TdsResultInfo(int numColums) : base(arg => NativeMethods.tds_alloc_results((ushort)arg), (ushort)numColums, NativeMethods.tds_free_results) { }
+
+        public TdsColumn[] Columns;
 
         // tds : config.c
         public TDSRET AllocRow() => NativeMethods.tds_alloc_row(Ptr);

@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace FreeTds
 {
@@ -150,12 +151,31 @@ namespace FreeTds
 
         public static void WithPtr<TStruct>(this MarshaledObject<TStruct> source, Action<IntPtr> action) where TStruct : struct { var ptr = source.Ptr; action(ptr); source.Ptr = ptr; }
 
+        public static string PtrToDString(this IntPtr ptr)
+        {
+            if (ptr == IntPtr.Zero)
+                return null;
+            int length;
+            if (Environment.Is64BitProcess) { length = (int)Marshal.ReadInt64(ptr); ptr += sizeof(long); }
+            else { length = Marshal.ReadInt32(ptr); ptr += sizeof(int); }
+            var value = Marshal.PtrToStringAnsi(ptr, length);
+            return value;
+        }
+
+        public static TStruct? ToMarshaled<TStruct>(this IntPtr ptr)
+            where TStruct : struct
+            => ptr != IntPtr.Zero ? (TStruct?)Marshal.PtrToStructure<TStruct>(ptr) : null;
+
+        public static TStruct[] ToMarshaledArray<TStruct>(this IntPtr ptr, int count)
+            where TStruct : struct
+            => ptr != IntPtr.Zero ? new[] { default(TStruct) } : null;
+
         public static T ToMarshaledObject<T, TStruct>(this IntPtr ptr)
             where T : MarshaledObject<TStruct>, new()
             where TStruct : struct
             => ptr != IntPtr.Zero ? new T { Ptr = ptr } : null;
 
-        public static T[] PtrToArray<T>(this IntPtr ptr, int count) => new[] { default(T) };
+        //public static T[] PtrToArray<T>(this IntPtr ptr, int count) => new[] { default(T) };
     }
 
     public class MarshaledObject<TStruct> : IDisposable where TStruct : struct
@@ -247,14 +267,73 @@ namespace FreeTds
 
     #region Marshaler
 
-    // The class that does the marshaling. Making it generic is not required, but will make it easier to use the same custom marshaler for multiple array types.
+    public class DStrMarshaler : ICustomMarshaler
+    {
+        /// <summary>
+        /// All custom marshalers require a static factory method with this signature.
+        /// </summary>
+        /// <param name="cookie"></param>
+        /// <returns></returns>
+        public static ICustomMarshaler GetInstance(string cookie) => new DStrMarshaler();
+
+        public object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            if (pNativeData == IntPtr.Zero)
+                return null;
+            int length;
+            if (Environment.Is64BitProcess) { length = (int)Marshal.ReadInt64(pNativeData); pNativeData += sizeof(long); }
+            else { length = Marshal.ReadInt32(pNativeData); pNativeData += sizeof(int); }
+            var value = Marshal.PtrToStringAnsi(pNativeData, length);
+            return value;
+        }
+
+        public IntPtr MarshalManagedToNative(object ManagedObj)
+        {
+            if (ManagedObj == null)
+                return IntPtr.Zero;
+            var value = (string)ManagedObj;
+            var bytes = Encoding.ASCII.GetBytes(value);
+            IntPtr ptr;
+            if (Environment.Is64BitProcess)
+            {
+                ptr = Marshal.AllocHGlobal(sizeof(long) + value.Length);
+                Marshal.ReadInt64(ptr, value.Length);
+                Marshal.Copy(bytes, 0, ptr + sizeof(long), value.Length);
+            }
+            else
+            {
+                ptr = Marshal.AllocHGlobal(sizeof(int) + value.Length);
+                Marshal.ReadInt32(ptr, value.Length);
+                Marshal.Copy(bytes, 0, ptr + sizeof(int), value.Length);
+            }
+            return ptr;
+        }
+
+        public void CleanUpNativeData(IntPtr pNativeData) => Marshal.FreeHGlobal(pNativeData);
+
+        public void CleanUpManagedData(object ManagedObj) { }
+
+        public int GetNativeDataSize() => -1;
+    }
+
+    /// <summary>
+    /// ArrayMarshaler
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ArrayMarshaler<T> : ICustomMarshaler
     {
-        // All custom marshalers require a static factory method with this signature.
+        /// <summary>
+        /// All custom marshalers require a static factory method with this signature.
+        /// </summary>
+        /// <param name="cookie"></param>
+        /// <returns></returns>
         public static ICustomMarshaler GetInstance(string cookie) => new ArrayMarshaler<T>();
 
-        // This is the function that builds the managed type - in this case, the managed array - from a pointer. You can just return null here if only sending the 
-        // array as an in-parameter.
+        /// <summary>
+        /// This is the function that builds the managed type - in this case, the managed array - from a pointer. You can just return null here if only sending the array as an in-parameter.
+        /// </summary>
+        /// <param name="pNativeData"></param>
+        /// <returns></returns>
         public object MarshalNativeToManaged(IntPtr pNativeData)
         {
             // First, sanity check...
@@ -273,11 +352,15 @@ namespace FreeTds
             return array;
         }
 
-        // This is the function that marshals your managed array to unmanaged memory.
-        // If you only ever marshal the array out, not in, you can return IntPtr.Zero
+        /// <summary>
+        /// This is the function that marshals your managed array to unmanaged memory. If you only ever marshal the array out, not in, you can return IntPtr.Zero
+        /// </summary>
+        /// <param name="ManagedObject"></param>
+        /// <returns></returns>
         public IntPtr MarshalManagedToNative(object ManagedObject)
         {
-            if (ManagedObject == null) return IntPtr.Zero;
+            if (ManagedObject == null)
+                return IntPtr.Zero;
             var array = (T[])ManagedObject;
             var elSiz = Marshal.SizeOf<T>();
             // Get the total size of unmanaged memory that is needed (length + elements)
@@ -294,17 +377,25 @@ namespace FreeTds
             return ptr;
         }
 
-        // This function is called after completing the call that required marshaling to unmanaged memory. You should use it to free any unmanaged memory you allocated.
-        // If you never consume unmanaged memory or other resources, do nothing here.
+        /// <summary>
+        /// This function is called after completing the call that required marshaling to unmanaged memory. You should use it to free any unmanaged memory you allocated.
+        /// If you never consume unmanaged memory or other resources, do nothing here.
+        /// </summary>
+        /// <param name="pNativeData"></param>
         public void CleanUpNativeData(IntPtr pNativeData) => Marshal.FreeHGlobal(pNativeData); // Free the unmanaged memory. Use Marshal.FreeCoTaskMem if using COM.
 
-        // If, after marshaling from unmanaged to managed, you have anything that needs to be taken care of when you're done with the object, put it here. Garbage 
-        // collection will free the managed object, so I've left this function empty.
+        /// <summary>
+        /// If, after marshaling from unmanaged to managed, you have anything that needs to be taken care of when you're done with the object, put it here. Garbage 
+        /// collection will free the managed object, so I've left this function empty.
+        /// </summary>
+        /// <param name="ManagedObj"></param>
         public void CleanUpManagedData(object ManagedObj) { }
 
-        // This function is a lie. It looks like it should be impossible to get the right  value - the whole problem is that the size of each array is variable! 
-        // - but in practice the runtime doesn't rely on this and may not even call it.
-        // The MSDN example returns -1; I'll try to be a little more realistic.
+        /// <summary>
+        /// This function is a lie. It looks like it should be impossible to get the right value - the whole problem is that the size of each array is variable!  
+        /// - but in practice the runtime doesn't rely on this and may not even call it. The MSDN example returns -1; I'll try to be a little more realistic.
+        /// </summary>
+        /// <returns></returns>
         public int GetNativeDataSize() => sizeof(int) + Marshal.SizeOf<T>();
     }
 
