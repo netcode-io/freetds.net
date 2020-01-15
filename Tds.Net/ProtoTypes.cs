@@ -44,7 +44,6 @@ namespace FreeTds
         public int dttime;
     }
 
-
     [StructLayout(LayoutKind.Sequential)]
     public struct TDS_DATETIME4
     {

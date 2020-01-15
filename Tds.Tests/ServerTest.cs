@@ -60,7 +60,7 @@ namespace FreeTds
                         tds.EnvChange(P.TDS_ENV_PACKSIZE, null, "512");
                         //* TODO set mssql if tds7+ */
                         tds.SendLoginAck("sql server");
-                        if (G.IS_TDS50(tds.Value.conn__.Value))
+                        if (G.IS_TDS50(tds.Value.conn__))
                             tds.SendCapabilitiesToken();
                         tds.SendDoneToken(0, 1);
                     }

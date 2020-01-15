@@ -555,9 +555,12 @@ namespace FreeTds
         public fixed byte values[(int)G.TDS_MAX_CAPABILITY / 2 - 2];
     }
 
-    public unsafe struct TDS_CAPABILITIES
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe class TDS_CAPABILITIES
     {
-        public fixed byte types[(int)G.TDS_MAX_CAPABILITY]; //: TDS_CAPABILITY_TYPE
+        public TDS_CAPABILITY_TYPE types0;
+        public TDS_CAPABILITY_TYPE types1;
+        //public fixed byte types[(int)G.TDS_MAX_CAPABILITY]; //: TDS_CAPABILITY_TYPE
     }
 
     partial class G
@@ -566,7 +569,7 @@ namespace FreeTds
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSLOGIN
+    public class TDSLOGIN
     {
         /// <summary>
         /// server name (in freetds.conf)
@@ -753,7 +756,7 @@ namespace FreeTds
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate int tds_func_check(IntPtr col); //:TDSCOLUMN
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSCOLUMNFUNCS
+    public class TDSCOLUMNFUNCS
     {
         public tds_func_get_info get_info;
         public tds_func_get_data get_data;
@@ -791,7 +794,7 @@ namespace FreeTds
     /// Metadata about columns in regular and compute rows 
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSCOLUMN
+    public class TDSCOLUMN
     {
         public IntPtr funcs; //:TDSCOLUMNFUNCS
         public int column_usertype;
@@ -897,7 +900,7 @@ namespace FreeTds
     /// Hold information for any results
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSRESULTINFO
+    public class TDSRESULTINFO
     {
         /* TODO those fields can became a struct */
         public IntPtr columns; //: TDSCOLUMN[]
@@ -1005,7 +1008,7 @@ namespace FreeTds
     //typedef TDSRESULTINFO TDSPARAMINFO;
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSMESSAGE
+    public class TDSMESSAGE
     {
         [MarshalAs(UnmanagedType.LPStr)] public string server;
         [MarshalAs(UnmanagedType.LPStr)] public string message;
@@ -1026,7 +1029,7 @@ namespace FreeTds
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSUPDCOL
+    public class TDSUPDCOL
     {
         public IntPtr next; //:TDSUPDCOL
         public int colnamelength;
@@ -1054,7 +1057,7 @@ namespace FreeTds
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDS_CURSOR_STATUS
+    public class TDS_CURSOR_STATUS
     {
         public TDS_CURSOR_STATE declare;
         public TDS_CURSOR_STATE cursor_row;
@@ -1086,12 +1089,12 @@ namespace FreeTds
     /// Holds informations about a cursor
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSCURSOR
+    public class TDSCURSOR
     {
         /// <summary>
         /// next in linked list, keep first
         /// </summary>
-        public IntPtr next; public TDSCURSOR? next__ => next.ToMarshaled<TDSCURSOR>(); //:TDSCURSOR
+        public IntPtr next; public TDSCURSOR next__ => next.ToMarshaled<TDSCURSOR>(); //:TDSCURSOR
         /// <summary>
         /// reference counter so client can retain safely a pointer
         /// </summary>
@@ -1138,7 +1141,7 @@ namespace FreeTds
         /// <summary>
         /// row fetched from this cursor
         /// </summary>
-        public IntPtr res_info; public TDSRESULTINFO? res_info__ => res_info.ToMarshaled<TDSRESULTINFO>(); //:TDSRESULTINFO
+        public IntPtr res_info; public TDSRESULTINFO res_info__ => res_info.ToMarshaled<TDSRESULTINFO>(); //:TDSRESULTINFO
         public int type, concurrency;
     }
 
@@ -1167,12 +1170,12 @@ namespace FreeTds
     /// Holds information for a dynamic (also called prepared) query.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSDYNAMIC
+    public class TDSDYNAMIC
     {
         /// <summary>
         /// next in linked list, keep first
         /// </summary>
-        public IntPtr next; public TDSDYNAMIC? next__ => next.ToMarshaled<TDSDYNAMIC>(); //:TDSDYNAMIC
+        public IntPtr next; public TDSDYNAMIC next__ => next.ToMarshaled<TDSDYNAMIC>(); //:TDSDYNAMIC
         /// <summary>
         /// reference counter so client can retain safely a pointer
         /// </summary>
@@ -1199,13 +1202,13 @@ namespace FreeTds
         /// <summary>
         /// query results
         /// </summary>
-        public IntPtr res_info; public TDSPARAMINFO? res_info__ => res_info.ToMarshaled<TDSPARAMINFO>(); //:TDSPARAMINFO
+        public IntPtr res_info; public TDSPARAMINFO res_info__ => res_info.ToMarshaled<TDSPARAMINFO>(); //:TDSPARAMINFO
         /// <summary>
         /// query parameters.
         /// Mostly used executing query however is a good idea to prepare query again if parameter type change in an incompatible way (ie different
         /// types or larger size). Is also better to prepare a query knowing parameter types earlier.
         /// </summary>
-        public IntPtr @params; public TDSPARAMINFO? params__ => @params.ToMarshaled<TDSPARAMINFO>(); //:TDSPARAMINFO
+        public IntPtr @params; public TDSPARAMINFO params__ => @params.ToMarshaled<TDSPARAMINFO>(); //:TDSPARAMINFO
         /// <summary>
         /// saved query, we need to know original query if prepare is impossible
         /// </summary>
@@ -1227,7 +1230,7 @@ namespace FreeTds
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSCONTEXT //:https://stackoverflow.com/questions/50818345/set-c-sharp-callback-on-a-c-struct-obtained-via-p-invoke
+    public class TDSCONTEXT //:https://stackoverflow.com/questions/50818345/set-c-sharp-callback-on-a-c-struct-obtained-via-p-invoke
     {
         public TDSLOCALE locale;
         public IntPtr parent; //:TDSCONTEXT
@@ -1252,7 +1255,7 @@ namespace FreeTds
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSAUTHENTICATION
+    public class TDSAUTHENTICATION
     {
         public byte[] packet;
         public int packet_len;
@@ -1263,7 +1266,7 @@ namespace FreeTds
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSPACKET
+    public class TDSPACKET
     {
         public IntPtr next; //:TDSPACKET
         public short sid;
@@ -1291,7 +1294,7 @@ namespace FreeTds
     /// field related to connection
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSCONNECTION
+    public class TDSCONNECTION
     {
         public ushort tds_version;
         /// <summary>
@@ -1305,7 +1308,7 @@ namespace FreeTds
         /// </summary>
         public IntPtr s; //:TDS_SYS_SOCKET
         public TDSPOLLWAKEUP wakeup;
-        public IntPtr tds_ctx; public TDSCONTEXT? tds_ctx__ => tds_ctx.ToMarshaled<TDSCONTEXT>(); //:TDSCONTEXT
+        public IntPtr tds_ctx; public TDSCONTEXT tds_ctx__ => tds_ctx.ToMarshaled<TDSCONTEXT>(); //:TDSCONTEXT
 
         /// <summary>
         /// environment is shared between all sessions
@@ -1315,11 +1318,11 @@ namespace FreeTds
         /// <summary>
         /// linked list of cursors allocated for this connection contains only cursors allocated on the server
         /// </summary>
-        public IntPtr cursors; public TDSCURSOR? cursors__ => cursors.ToMarshaled<TDSCURSOR>(); //:TDSCURSOR
+        public IntPtr cursors; public TDSCURSOR cursors__ => cursors.ToMarshaled<TDSCURSOR>(); //:TDSCURSOR
         /// <summary>
         /// list of dynamic allocated for this connection contains only dynamic allocated on the server
         /// </summary>
-        public IntPtr dyns; public TDSDYNAMIC? dyns__ => dyns.ToMarshaled<TDSDYNAMIC>(); //:TDSDYNAMIC
+        public IntPtr dyns; public TDSDYNAMIC dyns__ => dyns.ToMarshaled<TDSDYNAMIC>(); //:TDSDYNAMIC
 
         public int char_conv_count;
         public IntPtr char_convs; public TDSICONV[] char_convs__ => char_convs.ToMarshaledArray<TDSICONV>(char_conv_count); //:TDSICONV[]
@@ -1340,10 +1343,10 @@ namespace FreeTds
 #if ENABLE_ODBC_MARS
         public uint mars => (uint)((_data_ >> 5) & 1);
 
-        public IntPtr in_net_tds; public TDSSOCKET? in_net_tds__ => in_net_tds.ToMarshaled<TDSSOCKET>(); //:TDSSOCKET
-        public IntPtr packets; public TDSPACKET? packets__ => packets.ToMarshaled<TDSPACKET>(); //:TDSPACKET
-        public IntPtr recv_packet; public TDSPACKET? recv_packet__ => recv_packet.ToMarshaled<TDSPACKET>(); //:TDSPACKET
-        public IntPtr send_packets; public TDSPACKET? send_packets__ => send_packets.ToMarshaled<TDSPACKET>(); //:TDSPACKET
+        public IntPtr in_net_tds; public TDSSOCKET in_net_tds__ => in_net_tds.ToMarshaled<TDSSOCKET>(); //:TDSSOCKET
+        public IntPtr packets; public TDSPACKET packets__ => packets.ToMarshaled<TDSPACKET>(); //:TDSPACKET
+        public IntPtr recv_packet; public TDSPACKET recv_packet__ => recv_packet.ToMarshaled<TDSPACKET>(); //:TDSPACKET
+        public IntPtr send_packets; public TDSPACKET send_packets__ => send_packets.ToMarshaled<TDSPACKET>(); //:TDSPACKET
         public uint send_pos, recv_pos;
 
         public tds_mutex list_mtx;
@@ -1352,7 +1355,7 @@ namespace FreeTds
         public IntPtr sessions; //:tds_socket[]
         public uint num_sessions;
         public uint num_cached_packets;
-        public IntPtr packet_cache; public TDSPACKET? packet_cache__ => packet_cache.ToMarshaled<TDSPACKET>(); //:TDSPACKET
+        public IntPtr packet_cache; public TDSPACKET packet_cache__ => packet_cache.ToMarshaled<TDSPACKET>(); //:TDSPACKET
 #endif
 
         public int spid;
@@ -1366,7 +1369,7 @@ namespace FreeTds
 #else
         public IntPtr tls_dummy;
 #endif
-        IntPtr authentication; public TDSAUTHENTICATION? authentication__ => authentication.ToMarshaled<TDSAUTHENTICATION>(); //:TDSAUTHENTICATION
+        IntPtr authentication; public TDSAUTHENTICATION authentication__ => authentication.ToMarshaled<TDSAUTHENTICATION>(); //:TDSAUTHENTICATION
         [MarshalAs(UnmanagedType.LPStr)] public string server;
     }
 
@@ -1374,12 +1377,12 @@ namespace FreeTds
     /// Information for a server connection
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct TDSSOCKET
+    public class TDSSOCKET
     {
 #if ENABLE_ODBC_MARS
-        public IntPtr conn; public TDSCONNECTION? conn__ => conn.ToMarshaled<TDSCONNECTION>(); //:TDSCONNECTION
+        public IntPtr conn; public TDSCONNECTION conn__ => conn.ToMarshaled<TDSCONNECTION>(); //:TDSCONNECTION
 #else
-        public TDSCONNECTION conn; public TDSCONNECTION? conn__ => conn; //:TDSCONNECTION
+        public TDSCONNECTION conn; public TDSCONNECTION conn__ => conn; //:TDSCONNECTION
 #endif
 
         /// <summary>
@@ -1436,27 +1439,27 @@ namespace FreeTds
         /// <summary>
         /// packet we received
         /// </summary>
-        public IntPtr recv_packet; public TDSPACKET? recv_packet__ => recv_packet.ToMarshaled<TDSPACKET>(); //:TDSPACKET
+        public IntPtr recv_packet; public TDSPACKET recv_packet__ => recv_packet.ToMarshaled<TDSPACKET>(); //:TDSPACKET
 
         /// <summary>
         /// packet we are preparing to send
         /// </summary>
-        public IntPtr send_packet; public TDSPACKET? send_packet__ => send_packet.ToMarshaled<TDSPACKET>(); //:TDSPACKET
+        public IntPtr send_packet; public TDSPACKET send_packet__ => send_packet.ToMarshaled<TDSPACKET>(); //:TDSPACKET
 
         /// <summary>
         /// Current query information. 
         /// Contains information in process, both normal and compute results.
         /// This pointer shouldn't be freed; it's just an alias to another structure.
         /// </summary>
-        public IntPtr current_results; public TDSRESULTINFO? current_results__ => current_results.ToMarshaled<TDSRESULTINFO>(); //:TDSRESULTINFO
-        public IntPtr res_info; public TDSRESULTINFO? res_info__ => res_info.ToMarshaled<TDSRESULTINFO>(); //:TDSRESULTINFO
+        public IntPtr current_results; public TDSRESULTINFO current_results__ => current_results.ToMarshaled<TDSRESULTINFO>(); //:TDSRESULTINFO
+        public IntPtr res_info; public TDSRESULTINFO res_info__ => res_info.ToMarshaled<TDSRESULTINFO>(); //:TDSRESULTINFO
         public uint num_comp_info;
-        public IntPtr comp_info; public TDSCOMPUTEINFO? comp_info__ => comp_info.ToMarshaled<TDSCOMPUTEINFO>(); //:TDSCOMPUTEINFO
-        public IntPtr param_info; public TDSPARAMINFO? param_info__ => param_info.ToMarshaled<TDSPARAMINFO>(); //:TDSPARAMINFO
+        public IntPtr comp_info; public TDSCOMPUTEINFO comp_info__ => comp_info.ToMarshaled<TDSCOMPUTEINFO>(); //:TDSCOMPUTEINFO
+        public IntPtr param_info; public TDSPARAMINFO param_info__ => param_info.ToMarshaled<TDSPARAMINFO>(); //:TDSPARAMINFO
         /// <summary>
         /// cursor in use
         /// </summary>
-        public IntPtr cur_cursor; public TDSCURSOR? cur_cursor__ => cur_cursor.ToMarshaled<TDSCURSOR>(); //:TDSCURSOR
+        public IntPtr cur_cursor; public TDSCURSOR cur_cursor__ => cur_cursor.ToMarshaled<TDSCURSOR>(); //:TDSCURSOR
         /// <summary>
         /// true is query sent was a bulk query so we need to switch state to QUERYING
         /// </summary>
@@ -1490,12 +1493,12 @@ namespace FreeTds
         /// <summary>
         /// dynamic structure in use
         /// </summary>
-        public IntPtr cur_dyn; public TDSDYNAMIC? cur_dyn__ => cur_dyn.ToMarshaled<TDSDYNAMIC>(); //:TDSDYNAMIC
+        public IntPtr cur_dyn; public TDSDYNAMIC cur_dyn__ => cur_dyn.ToMarshaled<TDSDYNAMIC>(); //:TDSDYNAMIC
 
         /// <summary>
         /// config for login stuff. After login this field is NULL
         /// </summary>
-        public IntPtr login; public TDSLOGIN? login__ => login.ToMarshaled<TDSLOGIN>(); //:TDSLOGIN
+        public IntPtr login; public TDSLOGIN login__ => login.ToMarshaled<TDSLOGIN>(); //:TDSLOGIN
         public delegate TDSRET env_chg_func_t(IntPtr tds, int type, [MarshalAs(UnmanagedType.LPStr)] string oldVal, [MarshalAs(UnmanagedType.LPStr)] string newval); //:TDSSOCKET
         public env_chg_func_t env_chg_func;
         public TDS_OPERATION current_op;
@@ -1506,11 +1509,11 @@ namespace FreeTds
 
     partial class G
     {
-        public static IntPtr tds_get_ctx(this TDSSOCKET tds) => tds.conn__.Value.tds_ctx; //:->TDSCONTEXT
+        public static IntPtr tds_get_ctx(this TDSSOCKET tds) => tds.conn__.tds_ctx; //:->TDSCONTEXT
         //public static void tds_set_ctx(this TDSSOCKET tds, ref TDSCONTEXT val) => tds.conn_.tds_ctx_ = IntPtr.Zero; //:val;
         public static IntPtr tds_get_parent(this TDSSOCKET tds) => tds.parent;
         //public static void tds_set_parent(this TDSSOCKET tds, ref TDSSOCKET val) => tds.parent = IntPtr.Zero; //val;
-        public static IntPtr tds_get_s(this TDSSOCKET tds) => tds.conn__.Value.s;
+        public static IntPtr tds_get_s(this TDSSOCKET tds) => tds.conn__.s;
         //public static void tds_set_s(this TDSSOCKET tds, ref TDSCONNECTION val) => tds.conn.s = IntPtr.Zero; //val;
     }
 
@@ -1890,20 +1893,20 @@ namespace FreeTds
         public static int TDS_MINOR(TDSLOGIN x) => x.tds_version & 0xff;
         public static int TDS_MINOR(TDSCONNECTION x) => x.tds_version & 0xff;
 
-        public static bool IS_TDSDEAD(TDSSOCKET? x) => x == null || x.Value.state == TDS_STATE.TDS_DEAD;
+        public static bool IS_TDSDEAD(TDSSOCKET x) => x == null || x.state == TDS_STATE.TDS_DEAD;
 
         /// <summary>
         /// Check if product is Sybase (such as Adaptive Server Enterrprice). x should be a TDSSOCKET*.
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public static bool TDS_IS_SYBASE(ref TDSSOCKET x) => (x.conn__.Value.product_version & 0x80000000u) == 0;
+        public static bool TDS_IS_SYBASE(TDSSOCKET x) => (x.conn__.product_version & 0x80000000u) == 0;
         /// <summary>
         /// Check if product is Microsft SQL Server. x should be a TDSSOCKET*.
         /// </summary>
         /// <param name=""></param>
         /// <returns></returns>
-        public static bool TDS_IS_MSSQL(ref TDSSOCKET x) => (x.conn__.Value.product_version & 0x80000000u) != 0;
+        public static bool TDS_IS_MSSQL(TDSSOCKET x) => (x.conn__.product_version & 0x80000000u) != 0;
 
         /// <summary>
         /// Calc a version number for mssql. Use with TDS_MS_VER(7,0,842).

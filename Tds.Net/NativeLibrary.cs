@@ -149,7 +149,7 @@ namespace FreeTds
         //            return ptrs;
         //        }
 
-        public static void WithPtr<TStruct>(this MarshaledObject<TStruct> source, Action<IntPtr> action) where TStruct : struct { var ptr = source.Ptr; action(ptr); source.Ptr = ptr; }
+        public static void WithPtr<TStruct>(this MarshaledObject<TStruct> source, Action<IntPtr> action) { var ptr = source.Ptr; action(ptr); source.Ptr = ptr; }
 
         public static string PtrToDString(this IntPtr ptr)
         {
@@ -158,27 +158,24 @@ namespace FreeTds
             int length;
             if (Environment.Is64BitProcess) { length = (int)Marshal.ReadInt64(ptr); ptr += sizeof(long); }
             else { length = Marshal.ReadInt32(ptr); ptr += sizeof(int); }
-            var value = Marshal.PtrToStringAnsi(ptr, length);
+            var value = length != 0 ? Marshal.PtrToStringAnsi(ptr, length) : string.Empty;
             return value;
         }
 
-        public static TStruct? ToMarshaled<TStruct>(this IntPtr ptr)
-            where TStruct : struct
-            => ptr != IntPtr.Zero ? (TStruct?)Marshal.PtrToStructure<TStruct>(ptr) : null;
+        public static TStruct ToMarshaled<TStruct>(this IntPtr ptr)
+            => ptr != IntPtr.Zero ? Marshal.PtrToStructure<TStruct>(ptr) : default(TStruct);
 
         public static TStruct[] ToMarshaledArray<TStruct>(this IntPtr ptr, int count)
-            where TStruct : struct
             => ptr != IntPtr.Zero ? new[] { default(TStruct) } : null;
 
         public static T ToMarshaledObject<T, TStruct>(this IntPtr ptr)
             where T : MarshaledObject<TStruct>, new()
-            where TStruct : struct
             => ptr != IntPtr.Zero ? new T { Ptr = ptr } : null;
 
         //public static T[] PtrToArray<T>(this IntPtr ptr, int count) => new[] { default(T) };
     }
 
-    public class MarshaledObject<TStruct> : IDisposable where TStruct : struct
+    public class MarshaledObject<TStruct> : IDisposable
     {
         internal protected IntPtr Ptr;
         readonly Action<IntPtr> _free;
