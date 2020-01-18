@@ -40,7 +40,7 @@ namespace FreeTds
             //NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A0: {tds.Value.state}\n");
             using (var ctx = new TdsContext())
             {
-                var a = ctx.Value.err_handler;
+                //var a = ctx.Value.err_handler;
                 var tds = ctx.Listen() ?? throw new Exception("Error Listening");
                 //get_incoming(tds.Value.s);
                 using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))

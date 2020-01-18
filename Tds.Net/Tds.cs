@@ -10,6 +10,8 @@ namespace FreeTds
     {
         static Tds() => NativeMethods.Touch();
 
+        #region Methods
+
         // tds : config.c
         public static TDS_COMPILETIME_SETTINGS GetCompiletimeSettings() => Marshal.PtrToStructure<TDS_COMPILETIME_SETTINGS>(NativeMethods.tds_get_compiletime_settings());
         public delegate void TdsConfParse(string option, string value, object param);
@@ -105,14 +107,20 @@ namespace FreeTds
 
         // tds : random.c
         public static void RandomBuffer(byte[] @out) => NativeMethods.tds_random_buffer(@out, @out.Length);
+
+        #endregion
     }
 
     public class BcpColData : MarshaledObject<BCPCOLDATA>
     {
         public BcpColData() : base(null, null, NativeMethods.tds_free_bcp_column_data) { }
 
+        #region Methods
+
         // tds : mem.c
         public void FreeBcpColumnData() => NativeMethods.tds_free_bcp_column_data(Ptr); //:Dispose
+
+        #endregion
     }
 
     public class TdsAuthentication : MarshaledObject<TDSAUTHENTICATION>
@@ -124,22 +132,32 @@ namespace FreeTds
     {
         public TdsBcpInfo() : base(arg => NativeMethods.tds_alloc_bcpinfo(), null, NativeMethods.tds_free_bcpinfo) { }
 
+        #region Methods
+
         // tds : mem.c
         public void FreeBcpinfo() => NativeMethods.tds_free_bcpinfo(Ptr); //:Dispose
         public void DeinitBcpinfo() => NativeMethods.tds_deinit_bcpinfo(Ptr);
+
+        #endregion
     }
 
     public class TdsColumn : MarshaledObject<TDSCOLUMN>
     {
         public TdsColumn() : base(null, null, null) { }
 
+        #region Methods
+
         // tds : mem.c
         public IntPtr AllocParamData() => NativeMethods.tds_alloc_param_data(Ptr);
+
+        #endregion
     }
 
     public class TdsConnection : MarshaledObject<TDSCONNECTION>
     {
         public TdsConnection() : base(null, null, NativeMethods.tds_connection_close) { }
+
+        #region Methods
 
         // tds : config.c
         public TdsDynamic LookupDynamic(string id) => NativeMethods.tds_lookup_dynamic(Ptr, id).ToMarshaledObject<TdsDynamic, TDSDYNAMIC>();
@@ -171,6 +189,8 @@ namespace FreeTds
 
         // tds : net.c
         public void ConnectionClose() => NativeMethods.tds_connection_close(Ptr);
+
+        #endregion
     }
 
     public class TdsContext : MarshaledObject<TDSCONTEXT>
@@ -203,6 +223,8 @@ namespace FreeTds
             set => Marshal.WriteByte(Ptr + Marshal.OffsetOf<TDSCONTEXT>("money_use_2_digits").ToInt32(), value ? (byte)1 : (byte)0);
         }
 
+        #region Methods
+
         // tds : mem.c
         public void FreeContext() => NativeMethods.tds_free_context(Ptr); //:Dispose
         public TdsSocket AllocSocket(uint bufsize = 4096) => NativeMethods.tds_alloc_socket(Ptr, bufsize).ToMarshaledObject<TdsSocket, TDSSOCKET>();
@@ -212,23 +234,33 @@ namespace FreeTds
 
         // server : login.c
         public TdsSocket Listen(int ipPort = 1433) { var r = NativeMethodsServer.tds_listen(Ptr, ipPort).ToMarshaledObject<TdsSocket, TDSSOCKET>(); r.SetState(TDS_STATE.TDS_IDLE); return r; }
+
+        #endregion
     }
 
     public class TdsCursor : MarshaledObject<TDSCURSOR>
     {
         public TdsCursor() : base(null, null, ptr => NativeMethods.tds_release_cursor(ref ptr)) { }
 
+        #region Methods
+
         // tds : mem.c
         public void ReleaseCursor() => this.WithPtr(ptr => NativeMethods.tds_release_cursor(ref ptr)); //:Dispose
+
+        #endregion
     }
 
     public class TdsDynamic : MarshaledObject<TDSDYNAMIC>
     {
         public TdsDynamic() : base(null, null, ptr => NativeMethods.tds_release_dynamic(ref ptr)) { }
 
+        #region Methods
+
         // tds : mem.c
         public void FreeInputParams() => NativeMethods.tds_free_input_params(Ptr);
         public void ReleaseDynamic() => this.WithPtr(ptr => NativeMethods.tds_release_dynamic(ref ptr)); //:Dispose
+
+        #endregion
     }
 
     public class TdsHeaders : MarshaledObject<TDSHEADERS>
@@ -240,22 +272,32 @@ namespace FreeTds
     {
         public TdsIconv() : base(null, null, null) { }
 
+        #region Methods
+
         // tds : token.c
         public int DetermineAdjustedSize(int size) => NativeMethods.determine_adjusted_size(Ptr, size);
+
+        #endregion
     }
 
     public class TdsLocale : MarshaledObject<TDSLOCALE>
     {
         public TdsLocale() : base(null, null, NativeMethods.tds_free_locale) { }
 
+        #region Methods
+
         // tds : mem.c
         public void FreeLocale() => NativeMethods.tds_free_locale(Ptr); //:Dispose
+
+        #endregion
     }
 
     public class TdsLogin : MarshaledObject<TDSLOGIN>
     {
         public TdsLogin() : base(null, null, NativeMethods.tds_free_login) { }
         public TdsLogin(int useEnvironment) : base(arg => NativeMethods.tds_alloc_login((int)arg), useEnvironment, NativeMethods.tds_free_login) { }
+
+        #region Methods
 
         // tds : config.c
         public bool ReadConfFile(string server) => NativeMethods.tds_read_conf_file(Ptr, server);
@@ -278,14 +320,20 @@ namespace FreeTds
         public bool SetClient_charset(string charset) => NativeMethods.tds_set_client_charset(Ptr, charset);
         public bool SetLanguage(string language) => NativeMethods.tds_set_language(Ptr, language);
         public void SetVersion(byte major_ver, byte minor_ver) => NativeMethods.tds_set_version(Ptr, major_ver, minor_ver);
+
+        #endregion
     }
 
     public class TdsMessage : MarshaledObject<TDSMESSAGE>
     {
         public TdsMessage() : base(null, null, NativeMethods.tds_free_msg) { }
 
+        #region Methods
+
         // tds : mem.c
         public void FreeMsg() => NativeMethods.tds_free_msg(Ptr); //:Dispose
+
+        #endregion
     }
 
     public class TdsMultiple : MarshaledObject<TDSMULTIPLE>
@@ -297,9 +345,13 @@ namespace FreeTds
     {
         public TdsPacket() : base(null, null, NativeMethods.tds_free_packets) { }
 
+        #region Methods
+
         // tds : mem.c
         public TdsPacket ReallocPacket(uint len) => NativeMethods.tds_realloc_packet(Ptr, len).ToMarshaledObject<TdsPacket, TDSPACKET>();
         public void FreePackets() => NativeMethods.tds_free_packets(Ptr); //:Dispose
+
+        #endregion
     }
 
     public class TdsResultInfo : MarshaledObject<TDSRESULTINFO>
@@ -309,6 +361,8 @@ namespace FreeTds
 
         public TdsColumn[] Columns;
 
+        #region Methods
+
         // tds : config.c
         public TDSRET AllocRow() => NativeMethods.tds_alloc_row(Ptr);
 
@@ -316,20 +370,30 @@ namespace FreeTds
         public void FreeResults() => NativeMethods.tds_free_results(Ptr);
         public void FreeRow(byte[] row) => NativeMethods.tds_free_row(Ptr, row);
         public void DetachResults() => NativeMethods.tds_detach_results(Ptr);
+
+        #endregion
     }
 
     public class TdsComputeInfo : TdsResultInfo
     {
+        #region Methods
+
         // tds : config.c
         public TDSRET AllocComputeRow() => NativeMethods.tds_alloc_compute_row(Ptr);
+
+        #endregion
     }
 
     public class TdsParamInfo : TdsResultInfo
     {
+        #region Methods
+
         // tds : mem.c
         public void FreeParamResults() => NativeMethods.tds_free_param_results(Ptr);
         public void FreeParamResult() => NativeMethods.tds_free_param_result(Ptr);
         public TdsParamInfo AllocParamResult() => NativeMethods.tds_alloc_param_result(Ptr).ToMarshaledObject<TdsParamInfo, TDSRESULTINFO>();
+
+        #endregion
     }
 
     public class TdsSocket : MarshaledObject<TDSSOCKET>
@@ -340,8 +404,10 @@ namespace FreeTds
         public TDS_PACKET_TYPE out_flag
         {
             get => Value.out_flag;
-            set { }
+            set => Marshal.WriteByte(Ptr + Marshal.OffsetOf<TDSSOCKET>("out_flag").ToInt32(), (byte)value);
         }
+
+        #region Methods
 
         // tds : config.c
         public TdsLogin ReadConfigInfo(TdsLogin login, TDSLOCALE locale) => NativeMethods.tds_read_config_info(Ptr, login.Ptr, ref locale).ToMarshaledObject<TdsLogin, TDSLOGIN>();
@@ -487,7 +553,6 @@ namespace FreeTds
         public TDSRET WritetextContinue(string text, uint size) => NativeMethods.tds_writetext_continue(Ptr, text, size);
         public TDSRET WritetextEnd() => NativeMethods.tds_writetext_end(Ptr);
 
-
         // server : login.c
         public int ReadLogin(out TdsLogin login) { var r = NativeMethodsServer.tds_read_login(Ptr, out var loginPtr); login = new TdsLogin { Ptr = loginPtr }; return r; }
         public int ReadLogin7(out TdsLogin login) { var r = NativeMethodsServer.tds7_read_login(Ptr, out var loginPtr); login = new TdsLogin { Ptr = loginPtr }; return r; }
@@ -515,5 +580,7 @@ namespace FreeTds
         public void SendTableHeader(TDSRESULTINFO resinfo) => NativeMethodsServer.tds_send_table_header(Ptr, ref resinfo);
         public void SendRow(TDSRESULTINFO resinfo) => NativeMethodsServer.tds_send_row(Ptr, ref resinfo);
         public void SendPrelogin71() => NativeMethodsServer.tds71_send_prelogin(Ptr);
+
+        #endregion
     }
 }
