@@ -1,8 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Data.SqlClient;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace FreeTds
@@ -12,6 +10,7 @@ namespace FreeTds
         [Test]
         public void TestServer()
         {
+            Tds.DumpOpen(@"C:\T_\dump.log");
             void dump_login(ref TDSLOGIN login)
             {
                 Console.WriteLine("host {0}", login.client_host_name__);
@@ -32,16 +31,29 @@ namespace FreeTds
                 using (var com = new SqlCommand("Select * From Table", conn))
                 {
                     conn.Open();
-                    com.ExecuteNonQuery();
+                    com.ExecuteNonQuery(); //Tix or it didn't happen
                 }
             });
-            //
-            Tds.DumpOpen(@"C:\T_\dump.log");
             //NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A0: {tds.Value.state}\n");
             using (var ctx = new TdsContext())
             {
+                ctx.MsgHandler = (a, b, c) =>
+                {
+                    return 0;
+                };
+                ctx.ErrHandler = (a, b, c) =>
+                {
+                    return 0;
+                };
+                ctx.IntHandler = (a) =>
+                {
+                    return 0;
+                };
+
                 //var a = ctx.Value.err_handler;
                 var tds = ctx.Listen() ?? throw new Exception("Error Listening");
+                //tds.Conn.Version = TDSVER_MS;
+
                 //get_incoming(tds.Value.s);
                 using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
                 {
@@ -49,7 +61,7 @@ namespace FreeTds
                     dump_login(ref loginValue);
                     if (login.Value.user_name__ == "guest" && login.Value.password__ == "sybase")
                     {
-                        tds.out_flag = TDS_PACKET_TYPE.TDS_REPLY;
+                        tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;
                         tds.EnvChange(P.TDS_ENV_DATABASE, "master", "pubs2");
                         tds.SendMsg(5701, 2, 10, "Changed database context to 'pubs2'.", "JDBC", "ZZZZZ", 1);
                         if (!login.Value.suppress_language)
@@ -71,7 +83,7 @@ namespace FreeTds
                 /* printf("incoming packet %d\n", tds_read_packet(tds)); */
                 var query = tds.GetGenericQuery();
                 Console.WriteLine("query : {0}", query);
-                tds.out_flag = TDS_PACKET_TYPE.TDS_REPLY;
+                tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;
                 using (var resinfo = new TdsResultInfo(1))
                 {
                     //resinfo.Columns[0].column_type = SYBVARCHAR;

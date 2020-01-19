@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using TDSCOMPUTEINFO = FreeTds.TDSRESULTINFO;
 using TDSPARAMINFO = FreeTds.TDSRESULTINFO;
 using Size_t = System.IntPtr;
+using TDSRET = System.Int32;
 
 namespace FreeTds
 {
@@ -155,16 +156,13 @@ namespace FreeTds
         public static readonly int[] tds_numeric_bytes_per_prec = NativeMethods.MarshalToPtrArray<int>("tds_numeric_bytes_per_prec", 1);
     }
 
-    public enum TDSRET : int //:sky
-    {
-        TDS_NO_MORE_RESULTS = 1,
-        TDS_SUCCESS = 0,
-        TDS_FAIL = -1,
-        TDS_CANCELLED = -2,
-    }
-
     partial class G
     {
+        public const TDSRET TDS_NO_MORE_RESULTS = 1;
+        public const TDSRET TDS_SUCCESS = 0;
+        public const TDSRET TDS_FAIL = -1;
+        public const TDSRET TDS_CANCELLED = -2;
+
         public static bool TDS_FAILED(this TDSRET rc) => rc < 0;
         public static bool TDS_SUCCEED(this TDSRET rc) => rc >= 0;
         public static TDSRET TDS_PROPAGATE(this TDSRET rc) { do { TDSRET _tds_ret = rc; if (TDS_FAILED(_tds_ret)) return _tds_ret; } while (true); }
@@ -298,7 +296,7 @@ namespace FreeTds
     /// </summary>
     public enum TDSERRNO
     {
-        TDSEOK = TDSRET.TDS_SUCCESS,
+        TDSEOK = G.TDS_SUCCESS,
         TDSEVERDOWN = 100,
         TDSEINPROGRESS,
         TDSEICONVIU = 2400,
@@ -1507,18 +1505,15 @@ namespace FreeTds
         public tds_mutex wire_mtx;
     }
 
-    partial class G
-    {
-        public static IntPtr tds_get_ctx(this TDSSOCKET tds) => tds.conn__.tds_ctx; //:->TDSCONTEXT
-        //public static void tds_set_ctx(this TDSSOCKET tds, ref TDSCONTEXT val) => tds.conn_.tds_ctx_ = IntPtr.Zero; //:val;
-        public static IntPtr tds_get_parent(this TDSSOCKET tds) => tds.parent;
-        //public static void tds_set_parent(this TDSSOCKET tds, ref TDSSOCKET val) => tds.parent = IntPtr.Zero; //val;
-        public static IntPtr tds_get_s(this TDSSOCKET tds) => tds.conn__.s;
-        //public static void tds_set_s(this TDSSOCKET tds, ref TDSCONNECTION val) => tds.conn.s = IntPtr.Zero; //val;
-    }
-
     public static partial class NativeMethods
     {
+        public static IntPtr tds_get_ctx(TDSSOCKET tds) => tds.conn__.tds_ctx; //:->TDSCONTEXT
+        public static void tds_set_ctx(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + Marshal.OffsetOf<TDSCONNECTION>("tds_ctx").ToInt32(), val); //:TDSCONTEXT
+        public static IntPtr tds_get_parent(TDSSOCKET tds) => tds.parent; //:->TDSSOCKET
+        public static void tds_set_parent(IntPtr tds, IntPtr val) => Marshal.WriteIntPtr(tds + Marshal.OffsetOf<TDSSOCKET>("parent").ToInt32(), val); //:TDSSOCKET:TDSSOCKET
+        public static IntPtr tds_get_s(TDSSOCKET tds) => tds.conn__.s;
+        public static void tds_set_s(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + Marshal.OffsetOf<TDSCONNECTION>("s").ToInt32(), val); //:TDSCONNECTION
+
         #region config.c
         [DllImport(LibraryName)] public static extern IntPtr tds_get_compiletime_settings();
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void TDSCONFPARSE([MarshalAs(UnmanagedType.LPStr)] string option, [MarshalAs(UnmanagedType.LPStr)] string value, IntPtr param);

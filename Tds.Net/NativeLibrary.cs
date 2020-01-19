@@ -177,9 +177,10 @@ namespace FreeTds
 
     public class MarshaledObject<TStruct> : IDisposable
     {
-        internal protected IntPtr Ptr;
+        public IntPtr Ptr;
         readonly Action<IntPtr> _free;
 
+        public MarshaledObject() { } //this(arg => Marshal.AllocHGlobal(Marshal.SizeOf<TStruct>()), null, Marshal.FreeHGlobal) { }
         public MarshaledObject(Func<object, IntPtr> @new, object newArg, Action<IntPtr> free)
         {
             if (@new != null)
