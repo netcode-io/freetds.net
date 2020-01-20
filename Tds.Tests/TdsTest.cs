@@ -32,5 +32,17 @@ namespace FreeTds
                 throw new Exception("try_tds_login() failed");
             Common.try_tds_logout(login, tds, verbose);
         }
+
+        [Test]
+        public void QueryTest()
+        {
+            var verbose = true;
+            var login = new TdsLogin(false);
+            var ret = Common.try_tds_login(ref login, out var tds, verbose);
+            if (ret != G.TDS_SUCCESS)
+                throw new Exception("try_tds_login() failed");
+            Common.run_query(tds, "Select * From Test;");
+            Common.try_tds_logout(login, tds, verbose);
+        }
     }
 }

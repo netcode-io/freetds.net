@@ -142,6 +142,75 @@ namespace FreeTds
 
     public class TdsConnection : MarshaledObject<TDSCONNECTION>
     {
+        #region Properties
+
+        public uint TdsVersion
+        {
+            get => Value.tds_version;
+            set => Marshal.WriteInt32(Ptr + Marshal.OffsetOf<TDSCONNECTION>("tds_version").ToInt32(), (int)value);
+        }
+        /// <summary>
+        /// version of product (Sybase/MS and full version)
+        /// </summary>
+        public uint ProductVersion => Value.product_version;
+        public string ProductName => Value.product_name;
+        public IntPtr S => Value.s;
+        public TDSPOLLWAKEUP Wakeup => Value.wakeup;
+        public TdsContext Context => Value.tds_ctx.ToMarshaledObject<TdsContext, TDSCONTEXT>();
+        /// <summary>
+        /// environment is shared between all sessions
+        /// </summary>
+        public TDSENV Env => Value.env;
+        /// <summary>
+        /// linked list of cursors allocated for this connection contains only cursors allocated on the server
+        /// </summary>
+        public TdsCursor Cursors => Value.cursors.ToMarshaledObject<TdsCursor, TDSCURSOR>();
+        /// <summary>
+        /// list of dynamic allocated for this connection contains only dynamic allocated on the server
+        /// </summary>
+        public TdsDynamic Dyns => Value.dyns.ToMarshaledObject<TdsDynamic, TDSDYNAMIC>();
+        public int CharConvCount => Value.char_conv_count;
+        public TDSICONV[] CharConvs => Value.char_convs.ToMarshaledArray<TDSICONV>(Value.char_conv_count);
+        public string Collation => Value.collation;
+        public string Transaction72 => Value.tds72_transaction;
+        public TDS_CAPABILITIES Capabilities => Value.capabilities;
+        public bool EmulLittleEndian => Value.emul_little_endian != 0;
+        public bool UseIconv => Value.use_iconv != 0;
+        public bool Tds71Rev1 => Value.tds71rev1 != 0;
+        /// <summary>
+        /// true is connection has pending closing (cursors or dynamic)
+        /// </summary>
+        public bool PendingClose => Value.pending_close != 0;
+        public bool EncryptSinglePacket => Value.encrypt_single_packet != 0;
+#if ENABLE_ODBC_MARS
+        public bool Mars => Value.mars != 0;
+        public TdsSocket InNetTds => Value.in_net_tds.ToMarshaledObject<TdsSocket, TDSSOCKET>();
+        public TdsPacket Packets => Value.packets.ToMarshaledObject<TdsPacket, TDSPACKET>();
+        public TdsPacket RecvPacket => Value.recv_packet.ToMarshaledObject<TdsPacket, TDSPACKET>();
+        public TdsPacket SendPackets => Value.send_packets.ToMarshaledObject<TdsPacket, TDSPACKET>();
+        public int SendPos => (int)Value.send_pos;
+        public int RecvPos => (int)Value.recv_pos;
+        public tds_mutex ListMtx => Value.list_mtx;
+        public IntPtr Sessions => Value.sessions;
+        public int NumSessions => (int)Value.num_sessions;
+        public int NumCachedPackets => (int)Value.num_cached_packets;
+        public TdsPacket PacketCache => Value.packet_cache.ToMarshaledObject<TdsPacket, TDSPACKET>();
+#endif
+        public int Spid => Value.spid;
+        public int ClientSpid => Value.client_spid;
+        public IntPtr TlsSession => Value.tls_session;
+#if HAVE_GNUTLS
+	    public IntPtr TlsCredentials => Value.tls_credentials;
+#elif HAVE_OPENSSL
+        public IntPtr TlsContext => Value.tls_ctx;
+#else
+        public IntPtr TlsDummy => Value.tls_dummy;
+#endif
+        public TdsAuthentication Authentication => Value.authentication.ToMarshaledObject<TdsAuthentication, TDSAUTHENTICATION>();
+        public string Server => Value.server;
+
+        #endregion
+
         #region Methods
 
         // tds : config.c
@@ -186,13 +255,13 @@ namespace FreeTds
 
         #region Properties
 
-        public TDSLOCALE Locale => Value.locale;
+        public TDSLOCALE Locale => Value.locale.ToMarshaled<TDSLOCALE>();
 
         public TdsContext Parent => Value.parent.ToMarshaledObject<TdsContext, TDSCONTEXT>();
 
-        public delegate int MsgHandler_t(TdsContext ctx, TdsSocket s, TdsMessage msg); //:TDSCONTEXT:TDSSOCKET:TDSMESSAGE
-        public delegate int ErrHandler_t(TdsContext ctx, TdsSocket s, TdsMessage msg); //:TDSCONTEXT:TDSSOCKET:TDSMESSAGE
-        public delegate int IntHandler_t(IntPtr a);
+        //public delegate int MsgHandler_t(TdsContext ctx, TdsSocket s, TdsMessage msg); //:TDSCONTEXT:TDSSOCKET:TDSMESSAGE
+        //public delegate int ErrHandler_t(TdsContext ctx, TdsSocket s, TdsMessage msg); //:TDSCONTEXT:TDSSOCKET:TDSMESSAGE
+        //public delegate int IntHandler_t(IntPtr a);
         public TDSCONTEXT.msg_handler_t MsgHandler
         {
             get => Value.msg_handler;

@@ -27,36 +27,40 @@ namespace FreeTds
 
             var connection = Task.Run(() =>
             {
+                //var login = new TdsLogin(false);
+                //var ret = Common.try_tds_login(ref login, out var tds);
+                //if (ret != G.TDS_SUCCESS)
+                //    throw new Exception("try_tds_login() failed");
+                //Common.run_query(tds, "Select * From Test;");
+                //Common.try_tds_logout(login, tds);
+
                 using (var conn = new SqlConnection("Data Source=tcp:localhost,1433;Initial Catalog=AdventureWorks;MultipleActiveResultSets=True;user=guest;pwd=sybase"))
                 using (var com = new SqlCommand("Select * From Table", conn))
                 {
                     conn.Open();
-                    com.ExecuteNonQuery(); //Tix or it didn't happen
+                    com.ExecuteNonQuery();
                 }
             });
+
             //NativeMethods.tdsdump_log(@"C:\T_\dump.log", 1, $"A0: {tds.Value.state}\n");
             using (var ctx = new TdsContext())
             {
-                ctx.MsgHandler = (a, b, c) =>
-                {
-                    return 0;
-                };
-                ctx.ErrHandler = (a, b, c) =>
-                {
-                    return 0;
-                };
-                ctx.IntHandler = (a) =>
-                {
-                    return 0;
-                };
-
-                //var a = ctx.Value.err_handler;
+                //ctx.MsgHandler = (a, b, c) =>
+                //{
+                //    return 0;
+                //};
+                //ctx.ErrHandler = (a, b, c) =>
+                //{
+                //    return 0;
+                //};
+                //ctx.IntHandler = (a) =>
+                //{
+                //    return 0;
+                //};
                 var tds = ctx.Listen() ?? throw new Exception("Error Listening");
-                //tds.Conn.Version = TDSVER_MS;
-
-                //get_incoming(tds.Value.s);
                 using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
                 {
+                    //
                     var loginValue = login.Value;
                     dump_login(ref loginValue);
                     if (login.Value.user_name__ == "guest" && login.Value.password__ == "sybase")
@@ -80,7 +84,6 @@ namespace FreeTds
                         return; // send nack before exiting
                     tds.FlushPacket();
                 }
-                /* printf("incoming packet %d\n", tds_read_packet(tds)); */
                 var query = tds.GetGenericQuery();
                 Console.WriteLine("query : {0}", query);
                 tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;

@@ -9,7 +9,7 @@ namespace FreeTds
         static string USER = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[1];
         static string SERVER = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[0];
         static string PASSWORD = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[2];
-        static string DATABASE = "";
+        //static string DATABASE = "";
         static string CHARSET = "ISO-8859-1";
 
         /// <summary>
@@ -57,8 +57,9 @@ namespace FreeTds
             return G.TDS_SUCCESS;
         }
 
-        public static TDSRET try_tds_login(ref TdsLogin login, out TdsSocket tds, bool verbose)
+        public static TDSRET try_tds_login(ref TdsLogin login, out TdsSocket tds, bool verbose = false)
         {
+            //SERVER = "localhost";
             tds = null;
             if (!login.SetPasswd(PASSWORD)
                 || !login.SetUser(USER)
@@ -66,7 +67,7 @@ namespace FreeTds
                 || !login.SetHost("myhost")
                 || !login.SetLibrary("TDS-Library")
                 || !login.SetServer(SERVER)
-                || !login.SetClientCharset("ISO-8859-1")
+                || !login.SetClientCharset(CHARSET)
                 || !login.SetLanguage("us_english"))
                 return G.TDS_FAIL;
             if (verbose)
@@ -88,14 +89,14 @@ namespace FreeTds
             return G.TDS_SUCCESS;
         }
 
-        public static TDSRET try_tds_logout(TdsLogin login, TdsSocket tds, bool verbose)
+        public static TDSRET try_tds_logout(TdsLogin login, TdsSocket tds, bool verbose = false)
         {
             if (verbose)
                 Console.WriteLine("Entered tds_try_logout()");
             tds.CloseSocket();
-            TdsContext.FreeSocket(tds);
-            Tds.FreeLogin(login);
-            Tds.FreeContext(test_context);
+            tds.Dispose(); //TdsContext.FreeSocket(tds);
+            login.Dispose(); // Tds.FreeLogin(login);
+            test_context.Dispose(); // Tds.FreeContext(test_context);
             test_context = null;
             return G.TDS_SUCCESS;
         }

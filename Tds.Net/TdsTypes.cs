@@ -1230,7 +1230,7 @@ namespace FreeTds
     [StructLayout(LayoutKind.Sequential)]
     public class TDSCONTEXT //:https://stackoverflow.com/questions/50818345/set-c-sharp-callback-on-a-c-struct-obtained-via-p-invoke
     {
-        public TDSLOCALE locale;
+        public IntPtr locale; public TDSLOCALE locale__ => locale.ToMarshaled<TDSLOCALE>(); //:TDSLOCALE
         public IntPtr parent; //:TDSCONTEXT
         /* handlers */
         public delegate int msg_handler_t(IntPtr ctx, IntPtr s, IntPtr msg); //:TDSCONTEXT:TDSSOCKET:TDSMESSAGE
@@ -1367,7 +1367,7 @@ namespace FreeTds
 #else
         public IntPtr tls_dummy;
 #endif
-        IntPtr authentication; public TDSAUTHENTICATION authentication__ => authentication.ToMarshaled<TDSAUTHENTICATION>(); //:TDSAUTHENTICATION
+        public IntPtr authentication; public TDSAUTHENTICATION authentication__ => authentication.ToMarshaled<TDSAUTHENTICATION>(); //:TDSAUTHENTICATION
         [MarshalAs(UnmanagedType.LPStr)] public string server;
     }
 
