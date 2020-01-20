@@ -572,7 +572,7 @@ namespace FreeTds
         /// <summary>
         /// server name (in freetds.conf)
         /// </summary>
-        public IntPtr server_name; public string server_name__ => server_name.PtrToDString();
+        public IntPtr server_name; //:DString
         /// <summary>
         /// port of database service
         /// </summary>
@@ -585,69 +585,69 @@ namespace FreeTds
         /// <summary>
         /// e.g. us-english
         /// </summary>
-        public IntPtr language; public string language__ => language.PtrToDString();
+        public IntPtr language; //:DString
         /// <summary>
         /// charset of server e.g. iso_1
         /// </summary>
-        public IntPtr server_charset; public string server_charset__ => server_charset.PtrToDString();
+        public IntPtr server_charset; //:DString
         public int connect_timeout;
-        public IntPtr client_host_name; public string client_host_name__ => server_charset.PtrToDString();
-        public IntPtr server_host_name; public string server_host_name__ => server_charset.PtrToDString();
+        public IntPtr client_host_name; //:DString
+        public IntPtr server_host_name; //:DString
         /// <summary>
         /// server realm name (in freetds.conf)
         /// </summary>
-        public IntPtr server_realm_name; public string server_realm_name__ => server_charset.PtrToDString();
+        public IntPtr server_realm_name; //:DString
         /// <summary>
         /// server SPN (in freetds.conf)
         /// </summary>
-        public IntPtr server_spn; public string server_spn__ => server_spn.PtrToDString();
+        public IntPtr server_spn; //:DString
         /// <summary>
         /// database filename to attach (MSSQL)
         /// </summary>
-        public IntPtr db_filename; public string db_filename__ => db_filename.PtrToDString();
+        public IntPtr db_filename; //:DString
         /// <summary>
         /// certificate authorities file
         /// </summary>
-        public IntPtr cafile; public string cafile__ => cafile.PtrToDString();
+        public IntPtr cafile; //:DString
         /// <summary>
         /// certificate revocation file
         /// </summary>
-        public IntPtr crlfile; public string crlfile__ => crlfile.PtrToDString();
-        public IntPtr openssl_ciphers; public string openssl_ciphers__ => openssl_ciphers.PtrToDString();
-        public IntPtr app_name; public string app_name__ => app_name.PtrToDString();
+        public IntPtr crlfile; //:DString
+        public IntPtr openssl_ciphers; //:DString
+        public IntPtr app_name; //:DString
         /// <summary>
         /// account for login
         /// </summary>
-        public IntPtr user_name; public string user_name__ => user_name.PtrToDString();
+        public IntPtr user_name; //:DString
         /// <summary>
         /// password of account login
         /// </summary>
-        public IntPtr password; public string password__ => password.PtrToDString();
+        public IntPtr password; //:DString
         /// <summary>
         /// new password to set (TDS 7.2+)
         /// </summary>
-        public IntPtr new_password; public string new_password__ => new_password.PtrToDString();
+        public IntPtr new_password; //:DString
 
         /// <summary>
-        /// Ct-Library, DB-Library,  TDS-Library or ODBC
+        /// Ct-Library, DB-Library, TDS-Library or ODBC
         /// </summary>
-        public IntPtr library; public string library__ => library.PtrToDString();
+        public IntPtr library; //:DString
         public byte encryption_level;
 
         public int query_timeout;
         public TDS_CAPABILITIES capabilities;
-        public IntPtr client_charset; public string client_charset__ => client_charset.PtrToDString();
-        public IntPtr database; public string database__ => database.PtrToDString();
+        public IntPtr client_charset; //:DString
+        public IntPtr database; //:DString
 
         /// <summary>
         /// ip(s) of server
         /// </summary>
-        public IntPtr ip_addrs; //:SKY:addrinfo
-        public IntPtr instance_name; public string instance_name__ => instance_name.PtrToDString();
-        public IntPtr dump_file; public string dump_file__ => dump_file.PtrToDString();
+        public IntPtr ip_addrs; //:addrinfo
+        public IntPtr instance_name; //:DString
+        public IntPtr dump_file; //:DString
         public int debug_flags;
         public int text_size;
-        public IntPtr routing_address; public string routing_address__ => routing_address.PtrToDString();
+        public IntPtr routing_address; //:DString
         public ushort routing_port;
 
         public byte option_flag2;
@@ -844,8 +844,8 @@ namespace FreeTds
         [MarshalAs(UnmanagedType.AnsiBStr)] public string table_column_name;
 
         public byte[] column_data;
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate int column_data_free_(IntPtr column); //:TDSCOLUMN
-        public column_data_free_ column_data_free;
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate int column_data_free_t(IntPtr column); //:TDSCOLUMN
+        public column_data_free_t column_data_free;
         byte _data_;
         public byte column_nullable => (byte)((_data_ >> 0) & 1);
         public byte column_writeable => (byte)((_data_ >> 1) & 1);
@@ -906,12 +906,12 @@ namespace FreeTds
         public ushort computeid;
         public int ref_count;
         public IntPtr attached_to; //:TDSSOCKET
-        public byte[] current_row;
-        public delegate void row_free_(IntPtr result, byte[] row); //:TDSRESULTINFO
-        public row_free_ row_free;
+        [MarshalAs(UnmanagedType.LPStr)] public string current_row;
+        public delegate void row_free_t(IntPtr result, byte[] row); //:TDSRESULTINFO
+        public row_free_t row_free;
         public int row_size;
 
-        public short[] bycolumns;
+        public IntPtr bycolumns; //: short[]
         public ushort by_cols;
         [MarshalAs(UnmanagedType.U1)] public bool rows_exist;
         /* TODO remove ?? used only in dblib */
@@ -1092,7 +1092,7 @@ namespace FreeTds
         /// <summary>
         /// next in linked list, keep first
         /// </summary>
-        public IntPtr next; public TDSCURSOR next__ => next.ToMarshaled<TDSCURSOR>(); //:TDSCURSOR
+        public IntPtr next; //:TDSCURSOR
         /// <summary>
         /// reference counter so client can retain safely a pointer
         /// </summary>
@@ -1139,7 +1139,7 @@ namespace FreeTds
         /// <summary>
         /// row fetched from this cursor
         /// </summary>
-        public IntPtr res_info; public TDSRESULTINFO res_info__ => res_info.ToMarshaled<TDSRESULTINFO>(); //:TDSRESULTINFO
+        public IntPtr res_info; //:TDSRESULTINFO
         public int type, concurrency;
     }
 
@@ -1173,7 +1173,7 @@ namespace FreeTds
         /// <summary>
         /// next in linked list, keep first
         /// </summary>
-        public IntPtr next; public TDSDYNAMIC next__ => next.ToMarshaled<TDSDYNAMIC>(); //:TDSDYNAMIC
+        public IntPtr next; //:TDSDYNAMIC
         /// <summary>
         /// reference counter so client can retain safely a pointer
         /// </summary>
@@ -1200,13 +1200,13 @@ namespace FreeTds
         /// <summary>
         /// query results
         /// </summary>
-        public IntPtr res_info; public TDSPARAMINFO res_info__ => res_info.ToMarshaled<TDSPARAMINFO>(); //:TDSPARAMINFO
+        public IntPtr res_info; //:TDSPARAMINFO
         /// <summary>
         /// query parameters.
         /// Mostly used executing query however is a good idea to prepare query again if parameter type change in an incompatible way (ie different
         /// types or larger size). Is also better to prepare a query knowing parameter types earlier.
         /// </summary>
-        public IntPtr @params; public TDSPARAMINFO params__ => @params.ToMarshaled<TDSPARAMINFO>(); //:TDSPARAMINFO
+        public IntPtr @params; //:TDSPARAMINFO
         /// <summary>
         /// saved query, we need to know original query if prepare is impossible
         /// </summary>
@@ -1230,7 +1230,7 @@ namespace FreeTds
     [StructLayout(LayoutKind.Sequential)]
     public class TDSCONTEXT //:https://stackoverflow.com/questions/50818345/set-c-sharp-callback-on-a-c-struct-obtained-via-p-invoke
     {
-        public IntPtr locale; public TDSLOCALE locale__ => locale.ToMarshaled<TDSLOCALE>(); //:TDSLOCALE
+        public IntPtr locale; //:TDSLOCALE
         public IntPtr parent; //:TDSCONTEXT
         /* handlers */
         public delegate int msg_handler_t(IntPtr ctx, IntPtr s, IntPtr msg); //:TDSCONTEXT:TDSSOCKET:TDSMESSAGE
@@ -1306,7 +1306,7 @@ namespace FreeTds
         /// </summary>
         public IntPtr s; //:TDS_SYS_SOCKET
         public TDSPOLLWAKEUP wakeup;
-        public IntPtr tds_ctx; public TDSCONTEXT tds_ctx__ => tds_ctx.ToMarshaled<TDSCONTEXT>(); //:TDSCONTEXT
+        public IntPtr tds_ctx; //:TDSCONTEXT
 
         /// <summary>
         /// environment is shared between all sessions
@@ -1316,14 +1316,14 @@ namespace FreeTds
         /// <summary>
         /// linked list of cursors allocated for this connection contains only cursors allocated on the server
         /// </summary>
-        public IntPtr cursors; public TDSCURSOR cursors__ => cursors.ToMarshaled<TDSCURSOR>(); //:TDSCURSOR
+        public IntPtr cursors; //:TDSCURSOR
         /// <summary>
         /// list of dynamic allocated for this connection contains only dynamic allocated on the server
         /// </summary>
-        public IntPtr dyns; public TDSDYNAMIC dyns__ => dyns.ToMarshaled<TDSDYNAMIC>(); //:TDSDYNAMIC
+        public IntPtr dyns; //:TDSDYNAMIC
 
         public int char_conv_count;
-        public IntPtr char_convs; public TDSICONV[] char_convs__ => char_convs.ToMarshaledArray<TDSICONV>(char_conv_count); //:TDSICONV[]
+        public IntPtr char_convs; //:TDSICONV[]
 
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 5)] public string collation;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)] public string tds72_transaction;
@@ -1341,10 +1341,10 @@ namespace FreeTds
 #if ENABLE_ODBC_MARS
         public uint mars => (uint)((_data_ >> 5) & 1);
 
-        public IntPtr in_net_tds; public TDSSOCKET in_net_tds__ => in_net_tds.ToMarshaled<TDSSOCKET>(); //:TDSSOCKET
-        public IntPtr packets; public TDSPACKET packets__ => packets.ToMarshaled<TDSPACKET>(); //:TDSPACKET
-        public IntPtr recv_packet; public TDSPACKET recv_packet__ => recv_packet.ToMarshaled<TDSPACKET>(); //:TDSPACKET
-        public IntPtr send_packets; public TDSPACKET send_packets__ => send_packets.ToMarshaled<TDSPACKET>(); //:TDSPACKET
+        public IntPtr in_net_tds; //:TDSSOCKET
+        public IntPtr packets; //:TDSPACKET
+        public IntPtr recv_packet; //:TDSPACKET
+        public IntPtr send_packets; //:TDSPACKET
         public uint send_pos, recv_pos;
 
         public tds_mutex list_mtx;
@@ -1353,7 +1353,7 @@ namespace FreeTds
         public IntPtr sessions; //:tds_socket[]
         public uint num_sessions;
         public uint num_cached_packets;
-        public IntPtr packet_cache; public TDSPACKET packet_cache__ => packet_cache.ToMarshaled<TDSPACKET>(); //:TDSPACKET
+        public IntPtr packet_cache; //:TDSPACKET
 #endif
 
         public int spid;
@@ -1367,7 +1367,7 @@ namespace FreeTds
 #else
         public IntPtr tls_dummy;
 #endif
-        public IntPtr authentication; public TDSAUTHENTICATION authentication__ => authentication.ToMarshaled<TDSAUTHENTICATION>(); //:TDSAUTHENTICATION
+        public IntPtr authentication; //:TDSAUTHENTICATION
         [MarshalAs(UnmanagedType.LPStr)] public string server;
     }
 
@@ -1883,10 +1883,10 @@ namespace FreeTds
         public static bool IS_TDS73_PLUS(TDSCONNECTION x) => x.tds_version >= 0x703;
         public static bool IS_TDS74_PLUS(TDSCONNECTION x) => x.tds_version >= 0x704;
 
-        public static int TDS_MAJOR(TDSLOGIN x) => x.tds_version >> 8;
-        public static int TDS_MAJOR(TDSCONNECTION x) => x.tds_version >> 8;
-        public static int TDS_MINOR(TDSLOGIN x) => x.tds_version & 0xff;
-        public static int TDS_MINOR(TDSCONNECTION x) => x.tds_version & 0xff;
+        public static byte TDS_MAJOR(TDSLOGIN x) => (byte)(x.tds_version >> 8);
+        public static byte TDS_MAJOR(TDSCONNECTION x) => (byte)(x.tds_version >> 8);
+        public static byte TDS_MINOR(TDSLOGIN x) => (byte)(x.tds_version & 0xff);
+        public static byte TDS_MINOR(TDSCONNECTION x) => (byte)(x.tds_version & 0xff);
 
         public static bool IS_TDSDEAD(TDSSOCKET x) => x == null || x.state == TDS_STATE.TDS_DEAD;
 

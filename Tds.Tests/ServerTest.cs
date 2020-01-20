@@ -1,6 +1,9 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Data.SqlClient;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FreeTds
@@ -11,18 +14,18 @@ namespace FreeTds
         public void TestServer()
         {
             Tds.DumpOpen(@"C:\T_\dump.log");
-            void dump_login(ref TDSLOGIN login)
+            void dump_login(TdsLogin login)
             {
-                Console.WriteLine("host {0}", login.client_host_name__);
-                Console.WriteLine("user {0}", login.user_name__);
-                Console.WriteLine("pass {0}", login.password__);
-                Console.WriteLine("app  {0}", login.app_name__);
-                Console.WriteLine("srvr {0}", login.server_name__);
-                Console.WriteLine("vers {0}.{0}", G.TDS_MAJOR(login), G.TDS_MINOR(login));
-                Console.WriteLine("lib  {0}", login.library__);
-                Console.WriteLine("lang {0}", login.language__);
-                Console.WriteLine("char {0}", login.server_charset__);
-                Console.WriteLine("bsiz {0}", login.block_size);
+                Console.WriteLine("host {0}", login.ClientHostName);
+                Console.WriteLine("user {0}", login.UserName);
+                Console.WriteLine("pass {0}", login.Password);
+                Console.WriteLine("app  {0}", login.AppName);
+                Console.WriteLine("srvr {0}", login.ServerName);
+                Console.WriteLine("vers {0}.{0}", login.TdsMajor(), login.TdsMinor());
+                Console.WriteLine("lib  {0}", login.Library);
+                Console.WriteLine("lang {0}", login.Language);
+                Console.WriteLine("char {0}", login.ServerCharset);
+                Console.WriteLine("bsiz {0}", login.BlockSize);
             }
 
             var connection = Task.Run(() =>
@@ -34,7 +37,7 @@ namespace FreeTds
                 //Common.run_query(tds, "Select * From Test;");
                 //Common.try_tds_logout(login, tds);
 
-                using (var conn = new SqlConnection("Data Source=tcp:localhost,1433;Initial Catalog=AdventureWorks;MultipleActiveResultSets=True;user=guest;pwd=sybase"))
+                using (var conn = new SqlConnection("Data Source=tcp:localhost,1433;Initial Catalog=AdventureWorks;MultipleActiveResultSets=True;user=guest;pwd=sybase;Encrypt=false;trustservercertificate=false"))
                 using (var com = new SqlCommand("Select * From Table", conn))
                 {
                     conn.Open();
@@ -60,10 +63,8 @@ namespace FreeTds
                 var tds = ctx.Listen() ?? throw new Exception("Error Listening");
                 using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
                 {
-                    //
-                    var loginValue = login.Value;
-                    dump_login(ref loginValue);
-                    if (login.Value.user_name__ == "guest" && login.Value.password__ == "sybase")
+                    dump_login(login);
+                    if (login.UserName == "guest" && login.Password == "sybase")
                     {
                         tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;
                         tds.EnvChange(P.TDS_ENV_DATABASE, "master", "pubs2");
@@ -89,17 +90,20 @@ namespace FreeTds
                 tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;
                 using (var resinfo = new TdsResultInfo(1))
                 {
-                    //resinfo.Columns[0].column_type = SYBVARCHAR;
-                    //resinfo.Columns[0].column_size = 30;
-                    //resinfo.Columns[0].column_name = "name";
-                    //resinfo.CurrentRow = "pubs2";
-                    //resinfo.Columns[0].column_data = resinfo.current_row;
-                    //tds.SendResult(resinfo);
-                    //tds.SendControlToken(1);
-                    //tds.SendRow(resinfo);
-                    //tds.SendDoneToken(16, 1);
-                    //tds.FlushPacket();
-                    //Thread.Sleep(30 * 1000);
+                    resinfo.CurrentRow = Marshal.StringToHGlobalAnsi("pubs2");
+                    resinfo.Columns[0] = new TdsColumn
+                    {
+                        ColumnType = TDS_SERVER_TYPE.SYBVARCHAR,
+                        ColumnSize = 30,
+                        ColumnName = "name",
+                        ColumnData = resinfo.CurrentRow,
+                    };
+                    tds.SendResult(resinfo);
+                    tds.SendControlToken(1);
+                    tds.SendRow(resinfo);
+                    tds.SendDoneToken(16, 1);
+                    tds.FlushPacket();
+                    Thread.Sleep(30 * 1000);
                 }
             }
         }

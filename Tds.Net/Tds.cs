@@ -121,17 +121,196 @@ namespace FreeTds
         #endregion
     }
 
-    public class BcpColData : MarshaledObject<BCPCOLDATA> { }
+    public class BcpColData : MarshaledObject<BCPCOLDATA>
+    {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<BCPCOLDATA>("data").ToInt32(),                 // 00
+            Marshal.OffsetOf<BCPCOLDATA>("datalen").ToInt32(),              // 01
+            Marshal.OffsetOf<BCPCOLDATA>("is_null").ToInt32(),              // 02
+        };
+    }
 
-    public class TdsAuthentication : MarshaledObject<TDSAUTHENTICATION> { }
+    public class TdsAuthentication : MarshaledObject<TDSAUTHENTICATION>
+    {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSAUTHENTICATION>("packet").ToInt32(),        // 00
+            Marshal.OffsetOf<TDSAUTHENTICATION>("packet_len").ToInt32(),    // 01
+            Marshal.OffsetOf<TDSAUTHENTICATION>("free").ToInt32(),          // 02
+            Marshal.OffsetOf<TDSAUTHENTICATION>("handle_next").ToInt32(),   // 03
+        };
+    }
 
     public class TdsBcpInfo : MarshaledObject<TDSBCPINFO>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSBCPINFO>("hint").ToInt32(),                 // 00
+            Marshal.OffsetOf<TDSBCPINFO>("parent").ToInt32(),               // 01
+            Marshal.OffsetOf<TDSBCPINFO>("tablename").ToInt32(),            // 02
+            Marshal.OffsetOf<TDSBCPINFO>("insert_stmt").ToInt32(),          // 03
+            Marshal.OffsetOf<TDSBCPINFO>("direction").ToInt32(),            // 04
+            Marshal.OffsetOf<TDSBCPINFO>("identity_insert_on").ToInt32(),   // 05
+            Marshal.OffsetOf<TDSBCPINFO>("xfer_init").ToInt32(),            // 06
+            Marshal.OffsetOf<TDSBCPINFO>("bind_count").ToInt32(),           // 07
+            Marshal.OffsetOf<TDSBCPINFO>("bindinfo").ToInt32(),             // 08
+        };
+
         public TdsBcpInfo() : base(arg => NativeMethods.tds_alloc_bcpinfo(), null, NativeMethods.tds_free_bcpinfo) { }
     }
 
     public class TdsColumn : MarshaledObject<TDSCOLUMN>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSCOLUMN>("funcs").ToInt32(),                 // 00
+            Marshal.OffsetOf<TDSCOLUMN>("column_usertype").ToInt32(),       // 01
+            Marshal.OffsetOf<TDSCOLUMN>("column_flags").ToInt32(),          // 02
+            Marshal.OffsetOf<TDSCOLUMN>("column_size").ToInt32(),           // 03
+            Marshal.OffsetOf<TDSCOLUMN>("column_type").ToInt32(),           // 04
+            Marshal.OffsetOf<TDSCOLUMN>("column_varint_size").ToInt32(),    // 05
+            Marshal.OffsetOf<TDSCOLUMN>("column_prec").ToInt32(),           // 06
+            Marshal.OffsetOf<TDSCOLUMN>("column_scale").ToInt32(),          // 07
+            Marshal.OffsetOf<TDSCOLUMN>("on_server").ToInt32(),             // 08
+            Marshal.OffsetOf<TDSCOLUMN>("char_conv").ToInt32(),             // 09
+            Marshal.OffsetOf<TDSCOLUMN>("table_name").ToInt32(),            // 10
+            Marshal.OffsetOf<TDSCOLUMN>("column_name").ToInt32(),           // 11
+            Marshal.OffsetOf<TDSCOLUMN>("table_column_name").ToInt32(),     // 12
+            Marshal.OffsetOf<TDSCOLUMN>("column_data").ToInt32(),           // 13
+            Marshal.OffsetOf<TDSCOLUMN>("column_data_free").ToInt32(),      // 14
+            Marshal.OffsetOf<TDSCOLUMN>("_data_").ToInt32(),                // 15
+            Marshal.OffsetOf<TDSCOLUMN>("column_collation").ToInt32(),      // 16
+            Marshal.OffsetOf<TDSCOLUMN>("column_operand").ToInt32(),        // 17
+            Marshal.OffsetOf<TDSCOLUMN>("column_operator").ToInt32(),       // 18
+            Marshal.OffsetOf<TDSCOLUMN>("column_cur_size").ToInt32(),       // 19
+            Marshal.OffsetOf<TDSCOLUMN>("column_bindtype").ToInt32(),       // 20
+            Marshal.OffsetOf<TDSCOLUMN>("column_bindfmt").ToInt32(),        // 21
+            Marshal.OffsetOf<TDSCOLUMN>("column_bindlen").ToInt32(),        // 22
+            Marshal.OffsetOf<TDSCOLUMN>("column_nullbind").ToInt32(),       // 23
+            Marshal.OffsetOf<TDSCOLUMN>("column_varaddr").ToInt32(),        // 24
+            Marshal.OffsetOf<TDSCOLUMN>("column_lenbind").ToInt32(),        // 25
+            Marshal.OffsetOf<TDSCOLUMN>("column_textpos").ToInt32(),        // 26
+            Marshal.OffsetOf<TDSCOLUMN>("column_text_sqlgetdatapos").ToInt32(),  // 27
+            Marshal.OffsetOf<TDSCOLUMN>("column_text_sqlputdatainfo").ToInt32(), // 28
+            Marshal.OffsetOf<TDSCOLUMN>("column_iconv_left").ToInt32(),     // 29
+            Marshal.OffsetOf<TDSCOLUMN>("column_iconv_buf").ToInt32(),      // 30
+            Marshal.OffsetOf<TDSCOLUMN>("bcp_column_data").ToInt32(),       // 31
+            Marshal.OffsetOf<TDSCOLUMN>("bcp_prefix_len").ToInt32(),        // 32
+            Marshal.OffsetOf<TDSCOLUMN>("bcp_term_len").ToInt32(),          // 33
+            Marshal.OffsetOf<TDSCOLUMN>("bcp_terminator").ToInt32(),        // 34
+        };
+
+        #region Properties
+
+        public TDSCOLUMNFUNCS Funcs => Marshal2.PtrToMarshaled<TDSCOLUMNFUNCS>(Ptr + _f[0]);
+        public int ColumnUsertype
+        {
+            get => Marshal.ReadInt32(Ptr + _f[1]);
+            set => Marshal.WriteInt32(Ptr + _f[1], value);
+        }
+        public int ColumnFlags
+        {
+            get => Marshal.ReadInt32(Ptr + _f[2]);
+            set => Marshal.WriteInt32(Ptr + _f[2], value);
+        }
+        /// <summary>
+        /// maximun size of data. For fixed is the size.
+        /// </summary>
+        public int ColumnSize
+        {
+            get => Marshal.ReadInt32(Ptr + _f[3]);
+            set => Marshal.WriteInt32(Ptr + _f[3], value);
+        }
+        /// <summary>
+        /// This type can be different from wire type because conversion (e.g. UCS-2->Ascii) can be applied.
+        /// I'm beginning to wonder about the wisdom of this, however.
+        /// April 2003 jkl
+        /// </summary>
+        public TDS_SERVER_TYPE ColumnType
+        {
+            get => (TDS_SERVER_TYPE)Marshal.ReadInt32(Ptr + _f[4]);
+            set => Marshal.WriteInt32(Ptr + _f[4], (int)value);
+        }
+        /// <summary>
+        /// size of length when reading from wire (0, 1, 2 or 4)
+        /// </summary>
+        public byte ColumnVarintSize
+        {
+            get => Marshal.ReadByte(Ptr + _f[5]);
+            set => Marshal.WriteByte(Ptr + _f[5], value);
+        }
+        /// <summary>
+        /// precision for decimal/numeric
+        /// </summary>
+        public byte ColumnPrec
+        {
+            get => Marshal.ReadByte(Ptr + _f[6]);
+            set => Marshal.WriteByte(Ptr + _f[6], value);
+        }
+        /// <summary>
+        /// scale for decimal/numeric
+        /// </summary>
+        public byte ColumnScale => Marshal.ReadByte(Ptr + _f[7]);
+        public int OnServer => Marshal.ReadInt32(Ptr + _f[8]);
+        /// <summary>
+        /// refers to previously allocated iconv information
+        /// </summary>
+        public TdsIconv CharConv => Marshal2.PtrToMarshaledObject<TdsIconv, TDSICONV>(Ptr + _f[9]);
+        public string TableName => Marshal.PtrToStringAnsi(Ptr + _f[10]);
+        public string ColumnName
+        {
+            get => Marshal.PtrToStringAnsi(Ptr + _f[11]);
+            set => Marshal.StringToHGlobalAnsi(value);
+        }
+        public string TableColumnName => Marshal.PtrToStringAnsi(Ptr + _f[12]);
+        public IntPtr ColumnData
+        {
+            get => Marshal.ReadIntPtr(Ptr + _f[13]);
+            set => Marshal.WriteIntPtr(Ptr + _f[13], value);
+        }
+        public TDSCOLUMN.column_data_free_t ColumnDataFree => Marshal.GetDelegateForFunctionPointer<TDSCOLUMN.column_data_free_t>(Ptr + _f[14]);
+        int _data_ => Marshal.ReadInt32(Ptr + _f[15]);
+        public bool ColumnNullable => ((_data_ >> 0) & 1) != 0;
+        public bool ColumnWriteable => ((_data_ >> 1) & 1) != 0;
+        public bool ColumnIdentity => ((_data_ >> 2) & 1) != 0;
+        public bool ColumnKey => ((_data_ >> 3) & 1) != 0;
+        public bool ColumnHidden => ((_data_ >> 4) & 1) != 0;
+        public bool ColumnOutput => ((_data_ >> 5) & 1) != 0;
+        public bool ColumnTimestamp => ((_data_ >> 6) & 1) != 0;
+        public string ColumnCollation => Marshal.PtrToStringAnsi(Ptr + _f[16]);
+        /* additional fields flags for compute results */
+        public short ColumnOperand => Marshal.ReadInt16(Ptr + _f[17]);
+        public byte ColumnOperator => Marshal.ReadByte(Ptr + _f[18]);
+        /// <summary>
+        /// FIXME this is data related, not column
+        /// size written in variable (ie: char, text, binary). -1 if NULL.
+        /// </summary>
+        public int ColumnCurSize => Marshal.ReadInt32(Ptr + _f[19]);
+        /// <summary>
+        /// related to binding or info stored by client libraries
+        /// FIXME find a best place to store these data, some are unused
+        /// </summary>
+        public short ColumnBindtype => Marshal.ReadInt16(Ptr + _f[20]);
+        public short ColumnBindfmt => Marshal.ReadInt16(Ptr + _f[21]);
+        public uint ColumnBindlen => (uint)Marshal.ReadInt32(Ptr + _f[22]);
+        public short[] ColumnNullbind => null; // Marshal.ReadInt32(Ptr + _f[23]);
+        public byte[] ColumnVaraddr => null; //Marshal.ReadInt32(Ptr + _f[24]);
+        public int[] ColumnLenbind => null; //Marshal.ReadInt32(Ptr + _f[25]);
+        public int columnTextpos => Marshal.ReadInt32(Ptr + _f[26]);
+        public int columnTextSqlgetdatapos => Marshal.ReadInt32(Ptr + _f[27]);
+        public byte ColumnTextSqlputdatainfo => Marshal.ReadByte(Ptr + _f[28]);
+        public byte ColumnIconvLeft => Marshal.ReadByte(Ptr + _f[29]);
+        public string ColumnIconvBuf => Marshal.PtrToStringAnsi(Ptr + _f[30], 9);
+        public BcpColData BcpColumnData => Marshal2.PtrToMarshaledObject<BcpColData, BCPCOLDATA>(Ptr + _f[31]);
+        /// <summary>
+        /// The length, in bytes, of any length prefix this column may have.
+        /// For example, strings in some non-C programming languages are made up of a one-byte length prefix, followed by the string data itself.
+        /// If the data do not have a length prefix, set prefixlen to 0.
+        /// Currently not very used in code, however do not remove.
+        /// </summary>
+        public int BcpPrefixLen => Marshal.ReadInt32(Ptr + _f[32]);
+        public int BcpTermLen => Marshal.ReadInt32(Ptr + _f[33]);
+        public string BcpTerminator => Marshal.PtrToStringAnsi(Ptr + _f[34]);
+
+        #endregion
+
         #region Methods
 
         // tds : mem.c
@@ -142,33 +321,76 @@ namespace FreeTds
 
     public class TdsConnection : MarshaledObject<TDSCONNECTION>
     {
-        #region Properties
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSCONNECTION>("tds_version").ToInt32(),       // 00
+            Marshal.OffsetOf<TDSCONNECTION>("product_version").ToInt32(),   // 01
+            Marshal.OffsetOf<TDSCONNECTION>("product_name").ToInt32(),      // 02
+            Marshal.OffsetOf<TDSCONNECTION>("s").ToInt32(),                 // 03
+            Marshal.OffsetOf<TDSCONNECTION>("wakeup").ToInt32(),            // 04
+            Marshal.OffsetOf<TDSCONNECTION>("tds_ctx").ToInt32(),           // 05
+            Marshal.OffsetOf<TDSCONNECTION>("env").ToInt32(),               // 06
+            Marshal.OffsetOf<TDSCONNECTION>("cursors").ToInt32(),           // 07
+            Marshal.OffsetOf<TDSCONNECTION>("dyns").ToInt32(),              // 08
+            Marshal.OffsetOf<TDSCONNECTION>("char_conv_count").ToInt32(),   // 09
+            Marshal.OffsetOf<TDSCONNECTION>("char_convs").ToInt32(),        // 10
+            Marshal.OffsetOf<TDSCONNECTION>("collation").ToInt32(),         // 11
+            Marshal.OffsetOf<TDSCONNECTION>("tds72_transaction").ToInt32(), // 12
+            Marshal.OffsetOf<TDSCONNECTION>("capabilities").ToInt32(),      // 13
+            Marshal.OffsetOf<TDSCONNECTION>("_data_").ToInt32(),            // 14
+            #if ENABLE_ODBC_MARS
+            Marshal.OffsetOf<TDSCONNECTION>("in_net_tds").ToInt32(),        // 15
+            Marshal.OffsetOf<TDSCONNECTION>("packets").ToInt32(),           // 16
+            Marshal.OffsetOf<TDSCONNECTION>("recv_packet").ToInt32(),       // 17
+            Marshal.OffsetOf<TDSCONNECTION>("send_packets").ToInt32(),      // 18
+            Marshal.OffsetOf<TDSCONNECTION>("send_pos").ToInt32(),          // 19
+            Marshal.OffsetOf<TDSCONNECTION>("recv_pos").ToInt32(),          // 20
+            Marshal.OffsetOf<TDSCONNECTION>("list_mtx").ToInt32(),          // 21
+            Marshal.OffsetOf<TDSCONNECTION>("sessions").ToInt32(),          // 22
+            Marshal.OffsetOf<TDSCONNECTION>("num_sessions").ToInt32(),      // 23
+            Marshal.OffsetOf<TDSCONNECTION>("num_cached_packets").ToInt32(),// 24
+            Marshal.OffsetOf<TDSCONNECTION>("packet_cache").ToInt32(),      // 25
+            #else
+            0,0,0,0,0,0,0,0,0,0,0,
+            #endif
+            Marshal.OffsetOf<TDSCONNECTION>("spid").ToInt32(),              // 26
+            Marshal.OffsetOf<TDSCONNECTION>("client_spid").ToInt32(),       // 27
+            #if HAVE_GNUTLS
+            Marshal.OffsetOf<TDSCONNECTION>("tls_credentials").ToInt32(),   // 28
+            #elif HAVE_OPENSSL
+            Marshal.OffsetOf<TDSCONNECTION>("tls_ctx").ToInt32(),           // 28
+            #else
+            Marshal.OffsetOf<TDSCONNECTION>("tls_dummy").ToInt32(),         // 28
+            #endif
+            Marshal.OffsetOf<TDSCONNECTION>("authentication").ToInt32(),    // 29
+            Marshal.OffsetOf<TDSCONNECTION>("server").ToInt32(),            // 30
+        };
 
+        #region Properties
         public uint TdsVersion
         {
-            get => Value.tds_version;
-            set => Marshal.WriteInt32(Ptr + Marshal.OffsetOf<TDSCONNECTION>("tds_version").ToInt32(), (int)value);
+            get => (uint)Marshal.ReadInt32(Ptr + _f[0]);
+            set => Marshal.WriteInt32(Ptr + _f[0], (int)value);
         }
         /// <summary>
         /// version of product (Sybase/MS and full version)
         /// </summary>
-        public uint ProductVersion => Value.product_version;
-        public string ProductName => Value.product_name;
-        public IntPtr S => Value.s;
-        public TDSPOLLWAKEUP Wakeup => Value.wakeup;
-        public TdsContext Context => Value.tds_ctx.ToMarshaledObject<TdsContext, TDSCONTEXT>();
+        public uint ProductVersion => (uint)Marshal.ReadInt32(Ptr + _f[1]); 
+        public string ProductName => Marshal.PtrToStringAnsi(Ptr + _f[2]);
+        public IntPtr S => Marshal.ReadIntPtr(Ptr + _f[3]);
+        public TDSPOLLWAKEUP Wakeup => Marshal2.PtrToMarshaled<TDSPOLLWAKEUP>(Ptr + _f[4]);
+        public TdsContext Context => Marshal2.PtrToMarshaledObject<TdsContext, TDSCONTEXT>(Ptr + _f[5]);
         /// <summary>
         /// environment is shared between all sessions
         /// </summary>
-        public TDSENV Env => Value.env;
+        public TDSENV Env => Marshal2.PtrToMarshaled<TDSENV>(Ptr + _f[6]);
         /// <summary>
         /// linked list of cursors allocated for this connection contains only cursors allocated on the server
         /// </summary>
-        public TdsCursor Cursors => Value.cursors.ToMarshaledObject<TdsCursor, TDSCURSOR>();
+        public TdsCursor Cursors => Marshal2.PtrToMarshaledObject<TdsCursor, TDSCURSOR>(Ptr + _f[7]);
         /// <summary>
         /// list of dynamic allocated for this connection contains only dynamic allocated on the server
         /// </summary>
-        public TdsDynamic Dyns => Value.dyns.ToMarshaledObject<TdsDynamic, TDSDYNAMIC>();
+        public TdsDynamic Dyns => Marshal2.PtrToMarshaledObject<TdsDynamic, TDSDYNAMIC>(Ptr + _f[8]);
         public int CharConvCount => Value.char_conv_count;
         public TDSICONV[] CharConvs => Value.char_convs.ToMarshaledArray<TDSICONV>(Value.char_conv_count);
         public string Collation => Value.collation;
@@ -249,6 +471,15 @@ namespace FreeTds
 
     public class TdsContext : MarshaledObject<TDSCONTEXT>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSCONTEXT>("locale").ToInt32(),               // 00
+            Marshal.OffsetOf<TDSCONTEXT>("parent").ToInt32(),               // 01
+            Marshal.OffsetOf<TDSCONTEXT>("msg_handler").ToInt32(),          // 02
+            Marshal.OffsetOf<TDSCONTEXT>("err_handler").ToInt32(),          // 03
+            Marshal.OffsetOf<TDSCONTEXT>("int_handler").ToInt32(),          // 04
+            Marshal.OffsetOf<TDSCONTEXT>("money_use_2_digits").ToInt32(),   // 05
+        };
+
         static TdsContext() => NativeMethods.Touch();
         public TdsContext() : base(arg => NativeMethods.tds_alloc_context(IntPtr.Zero), null, NativeMethods.tds_free_context) { }
         public TdsContext(TdsContext parent = null) : base(arg => NativeMethods.tds_alloc_context((IntPtr)arg), parent != null ? parent.Ptr : IntPtr.Zero, NativeMethods.tds_free_context) { }
@@ -308,7 +539,41 @@ namespace FreeTds
 
     public class TdsCursor : MarshaledObject<TDSCURSOR>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSCURSOR>("next").ToInt32(),                  // 00
+            Marshal.OffsetOf<TDSCURSOR>("ref_count").ToInt32(),             // 01
+            Marshal.OffsetOf<TDSCURSOR>("cursor_name").ToInt32(),           // 02
+            Marshal.OffsetOf<TDSCURSOR>("cursor_id").ToInt32(),             // 03
+            Marshal.OffsetOf<TDSCURSOR>("options").ToInt32(),               // 04
+            Marshal.OffsetOf<TDSCURSOR>("defer_close").ToInt32(),           // 05
+            Marshal.OffsetOf<TDSCURSOR>("query").ToInt32(),                 // 06
+            Marshal.OffsetOf<TDSCURSOR>("cursor_rows").ToInt32(),           // 07
+            Marshal.OffsetOf<TDSCURSOR>("status").ToInt32(),                // 08
+            Marshal.OffsetOf<TDSCURSOR>("srv_status").ToInt32(),            // 09
+            Marshal.OffsetOf<TDSCURSOR>("res_info").ToInt32(),              // 10
+            Marshal.OffsetOf<TDSCURSOR>("type").ToInt32(),                  // 11
+            Marshal.OffsetOf<TDSCURSOR>("concurrency").ToInt32(),           // 12
+        };
+
         public TdsCursor() : base(null, null, ptr => NativeMethods.tds_release_cursor(ref ptr)) { }
+
+        #region Properties
+
+        public TdsCursor Next => Marshal2.PtrToMarshaledObject<TdsCursor, TDSCURSOR>(Ptr + _f[0]);
+        public int RefCount => Marshal.ReadInt32(Ptr + _f[1]);
+        public string CursorName => Marshal.PtrToStringAnsi(Ptr + _f[2]);
+        public int CursorId => Marshal.ReadInt32(Ptr + _f[3]);
+        public byte Options => Marshal.ReadByte(Ptr + _f[4]);
+        public bool DeferClose => Marshal.ReadByte(Ptr + _f[5]) != 0;
+        public string Query => Marshal.PtrToStringAnsi(Ptr + _f[6]);
+        public int CursorRows => Marshal.ReadInt32(Ptr + _f[7]);
+        public TDS_CURSOR_STATUS Status => Marshal2.PtrToMarshaled<TDS_CURSOR_STATUS>(Ptr + _f[8]);
+        public ushort SrvStatus => (ushort)Marshal.ReadInt16(Ptr + _f[9]);
+        public TdsResultInfo ResInfo => Marshal2.PtrToMarshaledObject<TdsResultInfo, TDSRESULTINFO>(Ptr + _f[10]);
+        public int Type => Marshal.ReadInt32(Ptr + _f[11]);
+        public int Concurrency => Marshal.ReadInt32(Ptr + _f[12]);
+
+        #endregion
 
         #region Methods
 
@@ -320,7 +585,33 @@ namespace FreeTds
 
     public class TdsDynamic : MarshaledObject<TDSDYNAMIC>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSDYNAMIC>("next").ToInt32(),                 // 00
+            Marshal.OffsetOf<TDSDYNAMIC>("ref_count").ToInt32(),            // 01
+            Marshal.OffsetOf<TDSDYNAMIC>("num_id").ToInt32(),               // 02
+            Marshal.OffsetOf<TDSDYNAMIC>("id").ToInt32(),                   // 03
+            Marshal.OffsetOf<TDSDYNAMIC>("emulated").ToInt32(),             // 04
+            Marshal.OffsetOf<TDSDYNAMIC>("defer_close").ToInt32(),          // 05
+            Marshal.OffsetOf<TDSDYNAMIC>("res_info").ToInt32(),             // 06
+            Marshal.OffsetOf<TDSDYNAMIC>("params").ToInt32(),               // 07
+            Marshal.OffsetOf<TDSDYNAMIC>("query").ToInt32(),                // 08
+        };
+
         public TdsDynamic() : base(null, null, ptr => NativeMethods.tds_release_dynamic(ref ptr)) { }
+
+        #region Properties
+
+        public TdsDynamic Language => Marshal2.PtrToMarshaledObject<TdsDynamic, TDSDYNAMIC>(Ptr + _f[0]);
+        public int RefCount => Marshal.ReadInt32(Ptr + _f[1]);
+        public int NumId => Marshal.ReadInt32(Ptr + _f[2]);
+        public string Id => Marshal.PtrToStringAnsi(Ptr + _f[3], 30);
+        public byte Emulated => Marshal.ReadByte(Ptr + _f[4]);
+        public bool DeferClose => Marshal.ReadByte(Ptr + _f[5]) != 0;
+        public TdsParamInfo ResInfo => Marshal2.PtrToMarshaledObject<TdsParamInfo, TDSPARAMINFO>(Ptr + _f[6]);
+        public TdsParamInfo Params => Marshal2.PtrToMarshaledObject<TdsParamInfo, TDSPARAMINFO>(Ptr + _f[7]);
+        public string Query => Marshal.PtrToStringAnsi(Ptr + _f[8]);
+
+        #endregion
 
         #region Methods
 
@@ -331,10 +622,28 @@ namespace FreeTds
         #endregion
     }
 
-    public class TdsHeaders : MarshaledObject<TDSHEADERS> { }
+    public class TdsHeaders : MarshaledObject<TDSHEADERS>
+    {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSHEADERS>("qn_options").ToInt32(),           // 00
+            Marshal.OffsetOf<TDSHEADERS>("qn_msgtext").ToInt32(),           // 01
+            Marshal.OffsetOf<TDSHEADERS>("qn_timeout").ToInt32(),           // 02
+            /* TDS 7.4+: trace activity ID char[20] */
+        };
+
+        #region Properties
+
+        public string QnOptions => Marshal.PtrToStringAnsi(Ptr + _f[0]);
+        public string QnMsgtext => Marshal.PtrToStringAnsi(Ptr + _f[1]);
+        public int QnTimeout => Marshal.ReadInt32(Ptr + _f[2]);
+
+        #endregion
+    }
 
     public class TdsIconv : MarshaledObject<TDSICONV>
     {
+        static readonly int[] _f = new int[0];
+
         #region Methods
 
         // tds : token.c
@@ -345,13 +654,121 @@ namespace FreeTds
 
     public class TdsLocale : MarshaledObject<TDSLOCALE>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSLOCALE>("language").ToInt32(),              // 00
+            Marshal.OffsetOf<TDSLOCALE>("server_charset").ToInt32(),        // 01
+            Marshal.OffsetOf<TDSLOCALE>("date_fmt").ToInt32(),              // 02
+        };
+
         public TdsLocale() : base(null, null, NativeMethods.tds_free_locale) { }
+
+        #region Properties
+
+        public string Language => Marshal.PtrToStringAnsi(Ptr + _f[0]);
+        public string ServerCharset => Marshal.PtrToStringAnsi(Ptr + _f[1]);
+        public string DateFmt => Marshal.PtrToStringAnsi(Ptr + _f[2]);
+
+        #endregion
     }
 
     public class TdsLogin : MarshaledObject<TDSLOGIN>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSLOGIN>("server_name").ToInt32(),            // 00
+            Marshal.OffsetOf<TDSLOGIN>("port").ToInt32(),                   // 01
+            Marshal.OffsetOf<TDSLOGIN>("tds_version").ToInt32(),            // 02
+            Marshal.OffsetOf<TDSLOGIN>("block_size").ToInt32(),             // 03
+            Marshal.OffsetOf<TDSLOGIN>("language").ToInt32(),               // 04
+            Marshal.OffsetOf<TDSLOGIN>("server_charset").ToInt32(),         // 05
+            Marshal.OffsetOf<TDSLOGIN>("connect_timeout").ToInt32(),        // 06
+            Marshal.OffsetOf<TDSLOGIN>("client_host_name").ToInt32(),       // 07
+            Marshal.OffsetOf<TDSLOGIN>("server_host_name").ToInt32(),       // 08
+            Marshal.OffsetOf<TDSLOGIN>("server_realm_name").ToInt32(),      // 09
+            Marshal.OffsetOf<TDSLOGIN>("server_spn").ToInt32(),             // 10
+            Marshal.OffsetOf<TDSLOGIN>("db_filename").ToInt32(),            // 11
+            Marshal.OffsetOf<TDSLOGIN>("cafile").ToInt32(),                 // 12
+            Marshal.OffsetOf<TDSLOGIN>("crlfile").ToInt32(),                // 13
+            Marshal.OffsetOf<TDSLOGIN>("openssl_ciphers").ToInt32(),        // 14
+            Marshal.OffsetOf<TDSLOGIN>("app_name").ToInt32(),               // 15
+            Marshal.OffsetOf<TDSLOGIN>("user_name").ToInt32(),              // 16
+            Marshal.OffsetOf<TDSLOGIN>("password").ToInt32(),               // 17
+            Marshal.OffsetOf<TDSLOGIN>("new_password").ToInt32(),           // 18
+            Marshal.OffsetOf<TDSLOGIN>("library").ToInt32(),                // 19
+            Marshal.OffsetOf<TDSLOGIN>("encryption_level").ToInt32(),       // 20
+            Marshal.OffsetOf<TDSLOGIN>("query_timeout").ToInt32(),          // 21
+            Marshal.OffsetOf<TDSLOGIN>("capabilities").ToInt32(),           // 22
+            Marshal.OffsetOf<TDSLOGIN>("client_charset").ToInt32(),         // 23
+            Marshal.OffsetOf<TDSLOGIN>("database").ToInt32(),               // 24
+            Marshal.OffsetOf<TDSLOGIN>("ip_addrs").ToInt32(),               // 25
+            Marshal.OffsetOf<TDSLOGIN>("instance_name").ToInt32(),          // 26
+            Marshal.OffsetOf<TDSLOGIN>("dump_file").ToInt32(),              // 27
+            Marshal.OffsetOf<TDSLOGIN>("debug_flags").ToInt32(),            // 28
+            Marshal.OffsetOf<TDSLOGIN>("text_size").ToInt32(),              // 29
+            Marshal.OffsetOf<TDSLOGIN>("routing_address").ToInt32(),        // 30
+            Marshal.OffsetOf<TDSLOGIN>("routing_port").ToInt32(),           // 31
+            Marshal.OffsetOf<TDSLOGIN>("option_flag2").ToInt32(),           // 32
+            Marshal.OffsetOf<TDSLOGIN>("_data_").ToInt32(),                 // 33
+        };
+
         public TdsLogin() : base() { }
         public TdsLogin(bool useEnvironment) : base(arg => NativeMethods.tds_alloc_login((bool)arg ? 1 : 0), useEnvironment, NativeMethods.tds_free_login) { }
+
+        #region Properties
+
+        public string ServerName => Marshal2.PtrToDStringAscii(Ptr + _f[0]);
+        public int Port => Marshal.ReadInt32(Ptr + _f[1]);
+        public ushort TdsVersion => (ushort)Marshal.ReadInt16(Ptr + _f[2]);
+        public int BlockSize => Marshal.ReadInt32(Ptr + _f[3]);
+        public string Language => Marshal2.PtrToDStringAscii(Ptr + _f[4]);
+        public string ServerCharset => Marshal2.PtrToDStringAscii(Ptr + _f[5]);
+        public int ConnectTimeout => Marshal.ReadInt32(Ptr + _f[6]);
+        public string ClientHostName => Marshal2.PtrToDStringAscii(Ptr + _f[7]);
+        public string ServerHostName => Marshal2.PtrToDStringAscii(Ptr + _f[8]);
+        public string ServerRealmName => Marshal2.PtrToDStringAscii(Ptr + _f[9]);
+        public string ServerSpn => Marshal2.PtrToDStringAscii(Ptr + _f[10]);
+        public string DbFilename => Marshal2.PtrToDStringAscii(Ptr + _f[11]);
+        public string Cafile => Marshal2.PtrToDStringAscii(Ptr + _f[12]);
+        public string Crlfile => Marshal2.PtrToDStringAscii(Ptr + _f[13]);
+        public string OpensslCiphers => Marshal2.PtrToDStringAscii(Ptr + _f[14]);
+        public string AppName => Marshal2.PtrToDStringAscii(Ptr + _f[15]);
+        public string UserName => Marshal2.PtrToDStringAscii(Ptr + _f[16]);
+        public string Password => Marshal2.PtrToDStringAscii(Ptr + _f[17]);
+        public string NewPassword => Marshal2.PtrToDStringAscii(Ptr + _f[18]);
+        public string Library => Marshal2.PtrToDStringAscii(Ptr + _f[19]);
+        public byte EncryptionLevel => Marshal.ReadByte(Ptr + _f[20]);
+        public int QueryTimeout => Marshal.ReadInt32(Ptr + _f[21]);
+        public TDS_CAPABILITIES Capabilities => NativeLibrary.ToMarshaled<TDS_CAPABILITIES>(Ptr + _f[22]);
+        public string ClientCharset => Marshal2.PtrToDStringAscii(Ptr + _f[23]);
+        public string Database => Marshal2.PtrToDStringAscii(Ptr + _f[24]);
+        public IntPtr IpAddrs => Marshal.ReadIntPtr(Ptr + _f[25]);
+        public string InstanceName => Marshal2.PtrToDStringAscii(Ptr + _f[26]);
+        public string DumpFile => Marshal2.PtrToDStringAscii(Ptr + _f[27]);
+        public int DebugFlags => Marshal.ReadInt32(Ptr + _f[28]);
+        public int TextSize => Marshal.ReadInt32(Ptr + _f[29]);
+        public string RoutingAddress => Marshal2.PtrToDStringAscii(Ptr + _f[30]);
+        public ushort RoutingPort => (ushort)Marshal.ReadInt16(Ptr + _f[31]);
+        public byte OptionFlag2 => Marshal.ReadByte(Ptr + _f[32]);
+        int _data_ => Marshal.ReadInt32(Ptr + _f[33]);
+        /// <summary>
+        /// if bulk copy should be enabled
+        /// </summary>
+        public bool BulkCopy => ((_data_ >> 0) & 1) != 0;
+        public bool SuppressLanguage => ((_data_ >> 1) & 1) != 0;
+        public bool EmulLittleEndian => ((_data_ >> 2) & 1) != 0;
+        public bool GssapiUseDelegation => ((_data_ >> 3) & 1) != 0;
+        public bool UseNtlmv2 => ((_data_ >> 4) & 1) != 0;
+        public bool UseNtlmv2Specified => ((_data_ >> 5) & 1) != 0;
+        public bool UseLanman => ((_data_ >> 6) & 1) != 0;
+        public bool Mars => ((_data_ >> 7) & 1) != 0;
+        public bool UseUutf16 => ((_data_ >> 8) & 1) != 0;
+        public bool UseNewPassword => ((_data_ >> 9) & 1) != 0;
+        public bool ValidConfiguration => ((_data_ >> 10) & 1) != 0;
+        public bool CheckSslHostname => ((_data_ >> 11) & 1) != 0;
+        public bool ReadonlyIntent => ((_data_ >> 12) & 1) != 0;
+        public bool EnableTlsV1 => ((_data_ >> 13) & 1) != 0;
+        public bool ServerIsValid => ((_data_ >> 14) & 1) != 0;
+
+        #endregion
 
         #region Methods
 
@@ -377,11 +794,48 @@ namespace FreeTds
         public void SetVersion(byte major_ver, byte minor_ver) => NativeMethods.tds_set_version(Ptr, major_ver, minor_ver);
 
         #endregion
+
+        public byte TdsMajor() => (byte)(TdsVersion >> 8);
+        public byte TdsMinor() => (byte)(TdsVersion & 0xff);
     }
 
     public class TdsMessage : MarshaledObject<TDSMESSAGE>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSMESSAGE>("server").ToInt32(),               // 00
+            Marshal.OffsetOf<TDSMESSAGE>("message").ToInt32(),              // 01
+            Marshal.OffsetOf<TDSMESSAGE>("proc_name").ToInt32(),            // 02
+            Marshal.OffsetOf<TDSMESSAGE>("sql_state").ToInt32(),            // 03
+            Marshal.OffsetOf<TDSMESSAGE>("msgno").ToInt32(),                // 04
+            Marshal.OffsetOf<TDSMESSAGE>("line_number").ToInt32(),          // 05
+            Marshal.OffsetOf<TDSMESSAGE>("state").ToInt32(),                // 06
+            Marshal.OffsetOf<TDSMESSAGE>("priv_msg_type").ToInt32(),        // 07
+            Marshal.OffsetOf<TDSMESSAGE>("severity").ToInt32(),             // 08
+            Marshal.OffsetOf<TDSMESSAGE>("oserr").ToInt32(),                // 09
+        };
+
         public TdsMessage() : base(null, null, NativeMethods.tds_free_msg) { }
+
+        #region Properties
+
+        public string Server => Marshal.PtrToStringAnsi(Ptr + _f[0]);
+        public string Message => Marshal.PtrToStringAnsi(Ptr + _f[1]);
+        public string ProcName => Marshal.PtrToStringAnsi(Ptr + _f[2]);
+        public string SqlState => Marshal.PtrToStringAnsi(Ptr + _f[3]);
+        public int Msgno => Marshal.ReadInt32(Ptr + _f[4]);
+        public int LineNumber => Marshal.ReadInt32(Ptr + _f[5]);
+        /// <summary>
+        /// -1 .. 255
+        /// </summary>
+        public short State => Marshal.ReadInt16(Ptr + _f[6]);
+        public byte PrivMsgType => Marshal.ReadByte(Ptr + _f[7]);
+        public byte Severity => Marshal.ReadByte(Ptr + _f[8]);
+        /// <summary>
+        /// for library-generated errors
+        /// </summary>
+        public int Oserr => Marshal.ReadInt32(Ptr + _f[9]);
+
+        #endregion
 
         #region Methods
 
@@ -393,12 +847,40 @@ namespace FreeTds
 
     public class TdsMultiple : MarshaledObject<TDSMULTIPLE>
     {
-        public TdsMultiple() : base(null, null, null) { }
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSMULTIPLE>("type").ToInt32(),                // 00
+            Marshal.OffsetOf<TDSMULTIPLE>("flags").ToInt32(),               // 01
+        };
+
+        #region Properties
+
+        public TDS_MULTIPLE_TYPE type => (TDS_MULTIPLE_TYPE)Marshal.ReadInt32(Ptr + _f[0]);
+        public int flags => Marshal.ReadInt32(Ptr + _f[1]);
+
+        #endregion
     }
 
     public class TdsPacket : MarshaledObject<TDSPACKET>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSPACKET>("next").ToInt32(),                  // 00
+            Marshal.OffsetOf<TDSPACKET>("sid").ToInt32(),                   // 01
+            Marshal.OffsetOf<TDSPACKET>("len").ToInt32(),                   // 02
+            Marshal.OffsetOf<TDSPACKET>("capacity").ToInt32(),              // 03
+            Marshal.OffsetOf<TDSPACKET>("buf").ToInt32(),                   // 04
+        };
+
         public TdsPacket() : base(null, null, NativeMethods.tds_free_packets) { }
+
+        #region Properties
+
+        public TdsPacket Next => Marshal2.PtrToMarshaledObject<TdsPacket, TDSPACKET>(Ptr + _f[0]);
+        public short Sid => Marshal.ReadInt16(Ptr + _f[1]);
+        public int Len => Marshal.ReadInt32(Ptr + _f[2]);
+        public int Capacity => Marshal.ReadInt32(Ptr + _f[3]);
+        public IntPtr Buf => Ptr + _f[4];
+
+        #endregion
 
         #region Methods
 
@@ -410,10 +892,44 @@ namespace FreeTds
 
     public class TdsResultInfo : MarshaledObject<TDSRESULTINFO>
     {
-        public TdsResultInfo() : base(null, null, NativeMethods.tds_free_results) { }
-        public TdsResultInfo(int numColums) : base(arg => NativeMethods.tds_alloc_results((ushort)arg), (ushort)numColums, NativeMethods.tds_free_results) { }
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSRESULTINFO>("columns").ToInt32(),       // 00
+            Marshal.OffsetOf<TDSRESULTINFO>("num_cols").ToInt32(),      // 01
+            Marshal.OffsetOf<TDSRESULTINFO>("computeid").ToInt32(),     // 02
+            Marshal.OffsetOf<TDSRESULTINFO>("ref_count").ToInt32(),     // 03
+            Marshal.OffsetOf<TDSRESULTINFO>("attached_to").ToInt32(),   // 04
+            Marshal.OffsetOf<TDSRESULTINFO>("current_row").ToInt32(),   // 05
+            Marshal.OffsetOf<TDSRESULTINFO>("row_free").ToInt32(),      // 06
+            Marshal.OffsetOf<TDSRESULTINFO>("row_size").ToInt32(),      // 07
+            Marshal.OffsetOf<TDSRESULTINFO>("bycolumns").ToInt32(),     // 08
+            Marshal.OffsetOf<TDSRESULTINFO>("by_cols").ToInt32(),       // 09
+            Marshal.OffsetOf<TDSRESULTINFO>("rows_exist").ToInt32(),    // 10
+            Marshal.OffsetOf<TDSRESULTINFO>("more_results").ToInt32(),  // 11
+        };
 
-        public TdsColumn[] Columns;
+        public TdsResultInfo() : base(null, null, NativeMethods.tds_free_results) => Columns = new MarshaledObjectArrayAccessor<TdsResultInfo, TDSRESULTINFO, TdsColumn, TDSCOLUMN>(this, _f[0]);
+        public TdsResultInfo(int numColums) : base(arg => NativeMethods.tds_alloc_results((ushort)arg), (ushort)numColums, NativeMethods.tds_free_results) => Columns = new MarshaledObjectArrayAccessor<TdsResultInfo, TDSRESULTINFO, TdsColumn, TDSCOLUMN>(this, _f[0]);
+
+        #region Properties
+
+        public readonly MarshaledObjectArrayAccessor<TdsResultInfo, TDSRESULTINFO, TdsColumn, TDSCOLUMN> Columns;
+        public ushort NumCols => (ushort)Marshal.ReadInt16(Ptr + _f[1]);
+        public ushort ComputeId => (ushort)Marshal.ReadInt16(Ptr + _f[2]);
+        public int RefCount => Marshal.ReadInt32(Ptr + _f[3]);
+        public TdsSocket AttachedTo => Marshal2.PtrToMarshaledObject<TdsSocket, TDSSOCKET>(Ptr + _f[4]);
+        public IntPtr CurrentRow
+        {
+            get => Marshal.ReadIntPtr(Ptr + _f[5]);
+            set => Marshal.WriteIntPtr(Ptr + _f[5], value);
+        }
+        public TDSRESULTINFO.row_free_t RowFree => Marshal.GetDelegateForFunctionPointer<TDSRESULTINFO.row_free_t>(Ptr + _f[6]);
+        public int RowSize => Marshal.ReadInt32(Ptr + _f[7]);
+        public short[] ByColumns => NativeLibrary.ToMarshaledArray<short>(Ptr + _f[8], (ushort)Marshal.ReadInt16(Ptr + _f[9]));
+        public ushort ByCols => (ushort)Marshal.ReadInt16(Ptr + _f[9]);
+        public bool RowsExist => Marshal.ReadByte(Ptr + _f[10]) != 0;
+        public bool MoreResults => Marshal.ReadByte(Ptr + _f[11]) != 0;
+
+        #endregion
 
         #region Methods
 
@@ -451,6 +967,51 @@ namespace FreeTds
 
     public class TdsSocket : MarshaledObject<TDSSOCKET>
     {
+        static readonly int[] _f = new[] {
+            Marshal.OffsetOf<TDSSOCKET>("conn").ToInt32(),          // 00
+            Marshal.OffsetOf<TDSSOCKET>("in_buf").ToInt32(),        // 01
+            Marshal.OffsetOf<TDSSOCKET>("out_buf").ToInt32(),       // 02
+            Marshal.OffsetOf<TDSSOCKET>("out_buf_max").ToInt32(),   // 03
+            Marshal.OffsetOf<TDSSOCKET>("in_pos").ToInt32(),        // 04
+            Marshal.OffsetOf<TDSSOCKET>("out_pos").ToInt32(),       // 05
+            Marshal.OffsetOf<TDSSOCKET>("in_len").ToInt32(),        // 06
+            Marshal.OffsetOf<TDSSOCKET>("in_flag").ToInt32(),       // 07
+            Marshal.OffsetOf<TDSSOCKET>("out_flag").ToInt32(),      // 08
+            Marshal.OffsetOf<TDSSOCKET>("parent").ToInt32(),        // 09
+#if ENABLE_ODBC_MARS
+            Marshal.OffsetOf<TDSSOCKET>("sid").ToInt32(),           // 10
+            Marshal.OffsetOf<TDSSOCKET>("packet_cond").ToInt32(),   // 11
+            Marshal.OffsetOf<TDSSOCKET>("recv_seq").ToInt32(),      // 12
+            Marshal.OffsetOf<TDSSOCKET>("send_seq").ToInt32(),      // 13
+            Marshal.OffsetOf<TDSSOCKET>("recv_wnd").ToInt32(),      // 14
+            Marshal.OffsetOf<TDSSOCKET>("send_wnd").ToInt32(),      // 15
+#else
+            0,0,0,0,0,0,
+#endif
+            Marshal.OffsetOf<TDSSOCKET>("recv_packet").ToInt32(),   // 16
+            Marshal.OffsetOf<TDSSOCKET>("send_packet").ToInt32(),   // 17
+            Marshal.OffsetOf<TDSSOCKET>("current_results").ToInt32(), // 18
+            Marshal.OffsetOf<TDSSOCKET>("res_info").ToInt32(),      // 19
+            Marshal.OffsetOf<TDSSOCKET>("num_comp_info").ToInt32(), // 20
+            Marshal.OffsetOf<TDSSOCKET>("comp_info").ToInt32(),     // 21
+            Marshal.OffsetOf<TDSSOCKET>("param_info").ToInt32(),    // 22
+            Marshal.OffsetOf<TDSSOCKET>("cur_cursor").ToInt32(),    // 23
+            Marshal.OffsetOf<TDSSOCKET>("bulk_query").ToInt32(),    // 24
+            Marshal.OffsetOf<TDSSOCKET>("has_status").ToInt32(),    // 25
+            Marshal.OffsetOf<TDSSOCKET>("in_row").ToInt32(),        // 26
+            Marshal.OffsetOf<TDSSOCKET>("ret_status").ToInt32(),    // 27
+            Marshal.OffsetOf<TDSSOCKET>("state").ToInt32(),         // 28
+            Marshal.OffsetOf<TDSSOCKET>("in_cancel").ToInt32(),     // 29
+            Marshal.OffsetOf<TDSSOCKET>("rows_affected").ToInt32(), // 30
+            Marshal.OffsetOf<TDSSOCKET>("query_timeout").ToInt32(), // 31
+            Marshal.OffsetOf<TDSSOCKET>("cur_dyn").ToInt32(),       // 32
+            Marshal.OffsetOf<TDSSOCKET>("login").ToInt32(),         // 33
+            Marshal.OffsetOf<TDSSOCKET>("env_chg_func").ToInt32(),  // 34
+            Marshal.OffsetOf<TDSSOCKET>("current_op").ToInt32(),    // 35
+            Marshal.OffsetOf<TDSSOCKET>("option_value").ToInt32(),  // 36
+            Marshal.OffsetOf<TDSSOCKET>("wire_mtx").ToInt32(),      // 37
+        };
+
         public TdsSocket() : base(null, null, NativeMethods.tds_free_socket) { }
         public TdsSocket(TdsContext ctx, int bufSize = 4096) : base(arg => NativeMethods.tds_alloc_socket(ctx.Ptr, (uint)arg), bufSize, NativeMethods.tds_free_socket) { }
 
@@ -690,12 +1251,12 @@ namespace FreeTds
         public void SendDoneToken(short flags, int numrows) => NativeMethodsServer.tds_send_done_token(Ptr, flags, numrows);
         public void SendDone(int token, short flags, int numrows) => NativeMethodsServer.tds_send_done(Ptr, token, flags, numrows);
         public void SendControlToken(short numcols) => NativeMethodsServer.tds_send_control_token(Ptr, numcols);
-        public void SendColName(TDSRESULTINFO resinfo) => NativeMethodsServer.tds_send_col_name(Ptr, ref resinfo);
-        public void SendColInfo(TDSRESULTINFO resinfo) => NativeMethodsServer.tds_send_col_info(Ptr, ref resinfo);
-        public void SendResult(TDSRESULTINFO resinfo) => NativeMethodsServer.tds_send_result(Ptr, ref resinfo);
-        public void SendResult7(TDSRESULTINFO resinfo) => NativeMethodsServer.tds7_send_result(Ptr, ref resinfo);
-        public void SendTableHeader(TDSRESULTINFO resinfo) => NativeMethodsServer.tds_send_table_header(Ptr, ref resinfo);
-        public void SendRow(TDSRESULTINFO resinfo) => NativeMethodsServer.tds_send_row(Ptr, ref resinfo);
+        public void SendColName(TdsResultInfo resinfo) => NativeMethodsServer.tds_send_col_name(Ptr, resinfo.Ptr);
+        public void SendColInfo(TdsResultInfo resinfo) => NativeMethodsServer.tds_send_col_info(Ptr, resinfo.Ptr);
+        public void SendResult(TdsResultInfo resinfo) => NativeMethodsServer.tds_send_result(Ptr, resinfo.Ptr);
+        public void SendResult7(TdsResultInfo resinfo) => NativeMethodsServer.tds7_send_result(Ptr, resinfo.Ptr);
+        public void SendTableHeader(TdsResultInfo resinfo) => NativeMethodsServer.tds_send_table_header(Ptr, resinfo.Ptr);
+        public void SendRow(TdsResultInfo resinfo) => NativeMethodsServer.tds_send_row(Ptr, resinfo.Ptr);
         public void SendPrelogin71() => NativeMethodsServer.tds71_send_prelogin(Ptr);
 
         #endregion

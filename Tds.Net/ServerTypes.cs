@@ -31,12 +31,12 @@ namespace FreeTds
         [DllImport(LibraryName)] public static extern void tds_send_done_token(IntPtr tds, short flags, int numrows); //:TDSSOCKET
         [DllImport(LibraryName)] public static extern void tds_send_done(IntPtr tds, int token, short flags, int numrows); //:TDSSOCKET
         [DllImport(LibraryName)] public static extern void tds_send_control_token(IntPtr tds, short numcols); //:TDSSOCKET
-        [DllImport(LibraryName)] public static extern void tds_send_col_name(IntPtr tds, ref TDSRESULTINFO resinfo); //:TDSSOCKET
-        [DllImport(LibraryName)] public static extern void tds_send_col_info(IntPtr tds, ref TDSRESULTINFO resinfo); //:TDSSOCKET
-        [DllImport(LibraryName)] public static extern void tds_send_result(IntPtr tds, ref TDSRESULTINFO resinfo); //:TDSSOCKET
-        [DllImport(LibraryName)] public static extern void tds7_send_result(IntPtr tds, ref TDSRESULTINFO resinfo); //:TDSSOCKET
-        [DllImport(LibraryName)] public static extern void tds_send_table_header(IntPtr tds, ref TDSRESULTINFO resinfo); //:TDSSOCKET
-        [DllImport(LibraryName)] public static extern void tds_send_row(IntPtr tds, ref TDSRESULTINFO resinfo); //:TDSSOCKET
+        [DllImport(LibraryName)] public static extern void tds_send_col_name(IntPtr tds, IntPtr resinfo); //:TDSSOCKET:TDSRESULTINFO
+        [DllImport(LibraryName)] public static extern void tds_send_col_info(IntPtr tds, IntPtr resinfo); //:TDSSOCKET:TDSRESULTINFO
+        [DllImport(LibraryName)] public static extern void tds_send_result(IntPtr tds, IntPtr resinfo); //:TDSSOCKET:TDSRESULTINFO
+        [DllImport(LibraryName)] public static extern void tds7_send_result(IntPtr tds, IntPtr resinfo); //:TDSSOCKET:TDSRESULTINFO
+        [DllImport(LibraryName)] public static extern void tds_send_table_header(IntPtr tds, IntPtr resinfo); //:TDSSOCKET:TDSRESULTINFO
+        [DllImport(LibraryName)] public static extern void tds_send_row(IntPtr tds, IntPtr resinfo); //:TDSSOCKET:TDSRESULTINFO
         [DllImport(LibraryName)] public static extern void tds71_send_prelogin(IntPtr tds); //:TDSSOCKET
         #endregion
     }

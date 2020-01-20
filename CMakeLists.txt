@@ -59,5 +59,5 @@ target_link_libraries(tds
    ${VCPKG}/packages/freetds_${BITNESS}-windows/lib/tdssrv.lib
    ${VCPKG}/packages/freetds_${BITNESS}-windows/lib/tdsutils.lib
    ${VCPKG}/packages/freetds_${BITNESS}-windows/lib/replacements.lib
-   ${VCPKG}/packages/openssl-windows_${BITNESS}-windows/lib/libeay32.lib
-   ${VCPKG}/packages/openssl-windows_${BITNESS}-windows/lib/ssleay32.lib)
+   ${VCPKG}/packages/openssl-windows_${BITNESS}-windows/lib/libcrypto.lib
+   ${VCPKG}/packages/openssl-windows_${BITNESS}-windows/lib/libssl.lib)

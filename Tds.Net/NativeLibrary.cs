@@ -140,15 +140,6 @@ namespace FreeTds
 #endif
         }
 
-        //        static IntPtr[] MarshalToPtrArray(GumboVector vector)
-        //        {
-        //            if (vector.data == IntPtr.Zero)
-        //                return new IntPtr[0];
-        //            var ptrs = new IntPtr[vector.length];
-        //            Marshal.Copy(vector.data, ptrs, 0, ptrs.Length);
-        //            return ptrs;
-        //        }
-
         public static void WithPtr<TStruct>(this MarshaledObject<TStruct> source, Action<IntPtr> action) { var ptr = source.Ptr; action(ptr); source.Ptr = ptr; }
 
         public static string PtrToDString(this IntPtr ptr)
@@ -158,8 +149,7 @@ namespace FreeTds
             int length;
             if (Environment.Is64BitProcess) { length = (int)Marshal.ReadInt64(ptr); ptr += sizeof(long); }
             else { length = Marshal.ReadInt32(ptr); ptr += sizeof(int); }
-            var value = length != 0 ? Marshal.PtrToStringAnsi(ptr, length) : string.Empty;
-            return value;
+            return length != 0 ? Marshal.PtrToStringAnsi(ptr, length) : string.Empty;
         }
 
         public static TStruct ToMarshaled<TStruct>(this IntPtr ptr)
@@ -171,8 +161,59 @@ namespace FreeTds
         public static T ToMarshaledObject<T, TStruct>(this IntPtr ptr)
             where T : MarshaledObject<TStruct>, new()
             => ptr != IntPtr.Zero ? new T { Ptr = ptr } : null;
+    }
 
-        //public static T[] PtrToArray<T>(this IntPtr ptr, int count) => new[] { default(T) };
+    public static class Marshal2
+    {
+        public static string PtrToDStringAscii(IntPtr ptr)
+        {
+            ptr = Marshal.ReadIntPtr(ptr);
+            if (ptr == IntPtr.Zero)
+                return null;
+            int length;
+            if (Environment.Is64BitProcess) { length = (int)Marshal.ReadInt64(ptr); ptr += sizeof(long); }
+            else { length = Marshal.ReadInt32(ptr); ptr += sizeof(int); }
+            return length != 0 ? Marshal.PtrToStringAnsi(ptr, length) : string.Empty; ;
+        }
+
+        public static TStruct PtrToMarshaled<TStruct>(IntPtr ptr)
+        {
+            ptr = Marshal.ReadIntPtr(ptr);
+            return ptr != IntPtr.Zero ? Marshal.PtrToStructure<TStruct>(ptr) : default(TStruct);
+        }
+
+        public static TStruct[] PtrToMarshaledArray<TStruct>(IntPtr ptr, int count)
+        {
+            ptr = Marshal.ReadIntPtr(ptr);
+            return ptr != IntPtr.Zero ? new[] { default(TStruct) } : null;
+        }
+
+        public static T PtrToMarshaledObject<T, TStruct>(this IntPtr ptr)
+            where T : MarshaledObject<TStruct>, new()
+        {
+            ptr = Marshal.ReadIntPtr(ptr);
+            return ptr != IntPtr.Zero ? new T { Ptr = ptr } : null;
+        }
+
+        //        static IntPtr[] MarshalToPtrArray(GumboVector vector)
+        //        {
+        //            if (vector.data == IntPtr.Zero)
+        //                return new IntPtr[0];
+        //            var ptrs = new IntPtr[vector.length];
+        //            Marshal.Copy(vector.data, ptrs, 0, ptrs.Length);
+        //            return ptrs;
+        //        }
+    }
+
+    public class MarshaledObjectArrayAccessor<T, TStruct, TField, TFieldStruct>
+        where T : MarshaledObject<TStruct>
+    {
+        public MarshaledObjectArrayAccessor(T parent, int fieldOffset) { }
+        public TField this[int index]
+        {
+            get => default(TField);
+            set { }
+        }
     }
 
     public class MarshaledObject<TStruct> : IDisposable
