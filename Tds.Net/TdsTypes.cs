@@ -740,7 +740,7 @@ namespace FreeTds
     [StructLayout(LayoutKind.Sequential)]
     public struct BCPCOLDATA
     {
-        public byte[] data;
+        public IntPtr data; //:byte[]
         public int datalen;
         public int is_null;
     }
@@ -1378,9 +1378,9 @@ namespace FreeTds
     public class TDSSOCKET
     {
 #if ENABLE_ODBC_MARS
-        public IntPtr conn; public TDSCONNECTION conn__ => conn.ToMarshaled<TDSCONNECTION>(); //:TDSCONNECTION
+        public IntPtr conn; //public TDSCONNECTION conn__ => conn.ToMarshaled<TDSCONNECTION>(); //:TDSCONNECTION
 #else
-        public TDSCONNECTION conn; public TDSCONNECTION conn__ => conn; //:TDSCONNECTION
+        public TDSCONNECTION conn; //public TDSCONNECTION conn__ => conn; //:TDSCONNECTION
 #endif
 
         /// <summary>
@@ -1507,12 +1507,12 @@ namespace FreeTds
 
     public static partial class NativeMethods
     {
-        public static IntPtr tds_get_ctx(TDSSOCKET tds) => tds.conn__.tds_ctx; //:->TDSCONTEXT
-        public static void tds_set_ctx(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + Marshal.OffsetOf<TDSCONNECTION>("tds_ctx").ToInt32(), val); //:TDSCONTEXT
+        public static IntPtr tds_get_ctx(TDSSOCKET tds) => Marshal.ReadIntPtr(tds.conn + TdsConnection._f[5]); //:->TDSCONTEXT
+        public static void tds_set_ctx(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + TdsConnection._f[5], val); //:TDSCONTEXT
         public static IntPtr tds_get_parent(TDSSOCKET tds) => tds.parent; //:->TDSSOCKET
-        public static void tds_set_parent(IntPtr tds, IntPtr val) => Marshal.WriteIntPtr(tds + Marshal.OffsetOf<TDSSOCKET>("parent").ToInt32(), val); //:TDSSOCKET:TDSSOCKET
-        public static IntPtr tds_get_s(TDSSOCKET tds) => tds.conn__.s;
-        public static void tds_set_s(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + Marshal.OffsetOf<TDSCONNECTION>("s").ToInt32(), val); //:TDSCONNECTION
+        public static void tds_set_parent(IntPtr tds, IntPtr val) => Marshal.WriteIntPtr(tds + TdsSocket._f[9], val); //:TDSSOCKET:TDSSOCKET
+        public static IntPtr tds_get_s(TDSSOCKET tds) => Marshal.ReadIntPtr(tds.conn + TdsConnection._f[3]);
+        public static void tds_set_s(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + TdsConnection._f[3], val); //:TDSCONNECTION
 
         #region config.c
         [DllImport(LibraryName)] public static extern IntPtr tds_get_compiletime_settings();
@@ -1895,13 +1895,13 @@ namespace FreeTds
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public static bool TDS_IS_SYBASE(TDSSOCKET x) => (x.conn__.product_version & 0x80000000u) == 0;
+        public static bool TDS_IS_SYBASE(TDSSOCKET x) => (Marshal.ReadInt32(x.conn + TdsConnection._f[(int)TdsConnection._e.product_version]) & 0x80000000u) == 0;
         /// <summary>
         /// Check if product is Microsft SQL Server. x should be a TDSSOCKET*.
         /// </summary>
         /// <param name=""></param>
         /// <returns></returns>
-        public static bool TDS_IS_MSSQL(TDSSOCKET x) => (x.conn__.product_version & 0x80000000u) != 0;
+        public static bool TDS_IS_MSSQL(TDSSOCKET x) => (Marshal.ReadInt32(x.conn + TdsConnection._f[(int)TdsConnection._e.product_version]) & 0x80000000u) != 0;
 
         /// <summary>
         /// Calc a version number for mssql. Use with TDS_MS_VER(7,0,842).

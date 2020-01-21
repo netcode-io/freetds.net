@@ -165,7 +165,14 @@ namespace FreeTds
 
     public static class Marshal2
     {
-        public static string PtrToDStringAscii(IntPtr ptr)
+        public static string ReadStringAscii(IntPtr ptr)
+        {
+            ptr = Marshal.ReadIntPtr(ptr);
+            return ptr != IntPtr.Zero ? Marshal.PtrToStringAnsi(ptr) : null;
+        }
+        public static void WriteStringAscii(IntPtr ptr, string value) => Marshal.WriteIntPtr(ptr, value != null ? Marshal.StringToHGlobalAnsi(value) : IntPtr.Zero);
+
+        public static string ReadDStringAscii(IntPtr ptr)
         {
             ptr = Marshal.ReadIntPtr(ptr);
             if (ptr == IntPtr.Zero)
@@ -176,19 +183,19 @@ namespace FreeTds
             return length != 0 ? Marshal.PtrToStringAnsi(ptr, length) : string.Empty; ;
         }
 
-        public static TStruct PtrToMarshaled<TStruct>(IntPtr ptr)
+        public static TStruct ReadMarshaled<TStruct>(IntPtr ptr)
         {
             ptr = Marshal.ReadIntPtr(ptr);
             return ptr != IntPtr.Zero ? Marshal.PtrToStructure<TStruct>(ptr) : default(TStruct);
         }
 
-        public static TStruct[] PtrToMarshaledArray<TStruct>(IntPtr ptr, int count)
+        public static TStruct[] ReadMarshaledArray<TStruct>(IntPtr ptr, int count)
         {
             ptr = Marshal.ReadIntPtr(ptr);
             return ptr != IntPtr.Zero ? new[] { default(TStruct) } : null;
         }
 
-        public static T PtrToMarshaledObject<T, TStruct>(this IntPtr ptr)
+        public static T ReadMarshaledObject<T, TStruct>(IntPtr ptr)
             where T : MarshaledObject<TStruct>, new()
         {
             ptr = Marshal.ReadIntPtr(ptr);

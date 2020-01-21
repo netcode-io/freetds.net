@@ -63,6 +63,8 @@ namespace FreeTds
                 var tds = ctx.Listen() ?? throw new Exception("Error Listening");
                 using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
                 {
+                    tds.Conn.ProductName = "Microsoft SQL Server";
+                    tds.Conn.ProductVersion = G.TDS_MS_VER(7, 0, 0);
                     dump_login(login);
                     if (login.UserName == "guest" && login.Password == "sybase")
                     {
@@ -77,7 +79,7 @@ namespace FreeTds
                         tds.EnvChange(P.TDS_ENV_PACKSIZE, null, "512");
                         //* TODO set mssql if tds7+ */
                         tds.SendLoginAck("sql server");
-                        if (G.IS_TDS50(tds.Value.conn__))
+                        if (G.IS_TDS50(tds.Conn.Value))
                             tds.SendCapabilitiesToken();
                         tds.SendDoneToken(0, 1);
                     }
