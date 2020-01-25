@@ -1507,12 +1507,12 @@ namespace FreeTds
 
     public static partial class NativeMethods
     {
-        public static IntPtr tds_get_ctx(TDSSOCKET tds) => Marshal.ReadIntPtr(tds.conn + TdsConnection._f[5]); //:->TDSCONTEXT
-        public static void tds_set_ctx(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + TdsConnection._f[5], val); //:TDSCONTEXT
+        public static IntPtr tds_get_ctx(TDSSOCKET tds) => Marshal.ReadIntPtr(tds.conn + TdsConnection._f[(int)TdsConnection._e.tds_ctx]); //:->TDSCONTEXT
+        public static void tds_set_ctx(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + TdsConnection._f[(int)TdsConnection._e.tds_ctx], val); //:TDSCONTEXT
         public static IntPtr tds_get_parent(TDSSOCKET tds) => tds.parent; //:->TDSSOCKET
-        public static void tds_set_parent(IntPtr tds, IntPtr val) => Marshal.WriteIntPtr(tds + TdsSocket._f[9], val); //:TDSSOCKET:TDSSOCKET
-        public static IntPtr tds_get_s(TDSSOCKET tds) => Marshal.ReadIntPtr(tds.conn + TdsConnection._f[3]);
-        public static void tds_set_s(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + TdsConnection._f[3], val); //:TDSCONNECTION
+        public static void tds_set_parent(IntPtr tds, IntPtr val) => Marshal.WriteIntPtr(tds + TdsSocket._f[(int)TdsSocket._e.parent], val); //:TDSSOCKET:TDSSOCKET
+        public static IntPtr tds_get_s(TDSSOCKET tds) => Marshal.ReadIntPtr(tds.conn + TdsConnection._f[(int)TdsConnection._e.s]);
+        public static void tds_set_s(TDSSOCKET tds, IntPtr val) => Marshal.WriteIntPtr(tds.conn + TdsConnection._f[(int)TdsConnection._e.s], val); //:TDSCONNECTION
 
         #region config.c
         [DllImport(LibraryName)] public static extern IntPtr tds_get_compiletime_settings();

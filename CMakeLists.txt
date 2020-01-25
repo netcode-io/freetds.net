@@ -21,7 +21,7 @@ if(WIN32)
    ## install freetds:x86-windows
    #if (NOT IS_DIRECTORY ${VCPKG}/packages/freetds_x86-windows)
    #   execute_process(
-   #      COMMAND vcpkg install freetds:x86-windows
+   #      COMMAND vcpkg install freetds:x86-windows --overlay-ports=../custom-ports
    #      WORKING_DIRECTORY ${VCPKG}
    #   )
    #endif()
@@ -37,7 +37,7 @@ if(WIN32)
    # install freetds:x64-windows
    if (NOT IS_DIRECTORY ${VCPKG}/packages/freetds_x64-windows)
       execute_process(
-         COMMAND vcpkg install freetds:x64-windows
+         COMMAND vcpkg install freetds:x64-windows --overlay-ports=../custom-ports
          WORKING_DIRECTORY ${VCPKG}
       )
    endif()

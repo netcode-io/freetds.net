@@ -1074,7 +1074,10 @@ namespace FreeTds
         public int[] OutBuf => null; // out_buf, out_buf_max
         public int InPos => (int)Value.in_pos;
         public int OutPos => (int)Value.out_pos;
-        public byte InFlag => Value.in_flag;
+        public byte InFlag
+        {
+            get => Value.in_flag;
+        }
         public TDS_PACKET_TYPE OutFlag
         {
             get => Value.out_flag;

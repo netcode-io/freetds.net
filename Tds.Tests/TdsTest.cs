@@ -17,6 +17,7 @@ namespace FreeTds
         {
             var settings = Tds.GetCompiletimeSettings();
             Assert.AreEqual("auto", settings.tdsver);
+            Assert.AreEqual("freetds v1.1.24", settings.freetds_version);
         }
 
         /// <summary>

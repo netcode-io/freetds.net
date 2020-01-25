@@ -37,7 +37,7 @@ namespace FreeTds
                 //Common.run_query(tds, "Select * From Test;");
                 //Common.try_tds_logout(login, tds);
 
-                using (var conn = new SqlConnection("Data Source=tcp:localhost,1433;Initial Catalog=AdventureWorks;MultipleActiveResultSets=True;user=guest;pwd=sybase;Encrypt=false;trustservercertificate=false"))
+                using (var conn = new SqlConnection("Data Source=tcp:localhost,1433;Initial Catalog=Test;MultipleActiveResultSets=True;user=guest;pwd=sybase;Encrypt=false;trustservercertificate=false"))
                 using (var com = new SqlCommand("Select * From Table", conn))
                 {
                     conn.Open();
@@ -52,15 +52,16 @@ namespace FreeTds
                 //{
                 //    return 0;
                 //};
-                //ctx.ErrHandler = (a, b, c) =>
-                //{
-                //    return 0;
-                //};
+                ctx.ErrHandler = (a, b, c) =>
+                {
+                    return G.TDS_SUCCESS;
+                };
                 //ctx.IntHandler = (a) =>
                 //{
                 //    return 0;
                 //};
                 var tds = ctx.Listen() ?? throw new Exception("Error Listening");
+                tds.InFlag = 0;
                 using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
                 {
                     tds.Conn.ProductName = "Microsoft SQL Server";
