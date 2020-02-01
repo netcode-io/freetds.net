@@ -139,32 +139,33 @@ namespace FreeTds
             return new WindowsNativeLibrary(name);
 #endif
         }
-
-        public static void WithPtr<TStruct>(this MarshaledObject<TStruct> source, Action<IntPtr> action) { var ptr = source.Ptr; action(ptr); source.Ptr = ptr; }
-
-        public static string PtrToDString(this IntPtr ptr)
-        {
-            if (ptr == IntPtr.Zero)
-                return null;
-            int length;
-            if (Environment.Is64BitProcess) { length = (int)Marshal.ReadInt64(ptr); ptr += sizeof(long); }
-            else { length = Marshal.ReadInt32(ptr); ptr += sizeof(int); }
-            return length != 0 ? Marshal.PtrToStringAnsi(ptr, length) : string.Empty;
-        }
-
-        public static TStruct ToMarshaled<TStruct>(this IntPtr ptr)
-            => ptr != IntPtr.Zero ? Marshal.PtrToStructure<TStruct>(ptr) : default(TStruct);
-
-        public static TStruct[] ToMarshaledArray<TStruct>(this IntPtr ptr, int count)
-            => ptr != IntPtr.Zero ? new[] { default(TStruct) } : null;
-
-        public static T ToMarshaledObject<T, TStruct>(this IntPtr ptr)
-            where T : MarshaledObject<TStruct>, new()
-            => ptr != IntPtr.Zero ? new T { Ptr = ptr } : null;
     }
 
     public static class Marshal2
     {
+        public static TStruct ToMarshaled<TStruct>(this IntPtr ptr)
+           => ptr != IntPtr.Zero ? Marshal.PtrToStructure<TStruct>(ptr) : default(TStruct);
+        public static void MarshaledToPtr<TStruct>(this IntPtr ptr, TStruct value, bool fDeleteOld)
+        {
+            if (ptr == IntPtr.Zero)
+                throw new Exception();
+            Marshal.StructureToPtr(value, ptr, fDeleteOld);
+        }
+
+        //public static TStruct[] ToMarshaledArray<TStruct>(this IntPtr ptr, int count)
+        //    => ptr != IntPtr.Zero ? new[] { default(TStruct) } : null;
+
+        public static T ToMarshaledObject<T, TStruct>(this IntPtr ptr)
+            where T : MarshaledObject<TStruct>, new()
+            => ptr != IntPtr.Zero ? new T { Ptr = ptr } : null;
+        public static void MarshaledObjectToPtr<T, TStruct>(this IntPtr ptr, T value, bool fDeleteOld)
+            where T : MarshaledObject<TStruct>
+        {
+            if (ptr == IntPtr.Zero)
+                throw new Exception();
+            Marshal.StructureToPtr(value.Value, ptr, fDeleteOld);
+        }
+
         public static string ReadStringAscii(IntPtr ptr)
         {
             ptr = Marshal.ReadIntPtr(ptr);
@@ -192,7 +193,12 @@ namespace FreeTds
         public static TStruct[] ReadMarshaledArray<TStruct>(IntPtr ptr, int count)
         {
             ptr = Marshal.ReadIntPtr(ptr);
-            return ptr != IntPtr.Zero ? new[] { default(TStruct) } : null;
+            if (ptr == IntPtr.Zero)
+                return new TStruct[0];
+            var r = new TStruct[count];
+            if (typeof(TStruct) == typeof(byte)) Marshal.Copy(ptr, (byte[])(object)r, 0, count);
+            else throw new ArgumentOutOfRangeException(nameof(TStruct));
+            return r;
         }
 
         public static T ReadMarshaledObject<T, TStruct>(IntPtr ptr)
@@ -201,25 +207,23 @@ namespace FreeTds
             ptr = Marshal.ReadIntPtr(ptr);
             return ptr != IntPtr.Zero ? new T { Ptr = ptr } : null;
         }
-
-        //        static IntPtr[] MarshalToPtrArray(GumboVector vector)
-        //        {
-        //            if (vector.data == IntPtr.Zero)
-        //                return new IntPtr[0];
-        //            var ptrs = new IntPtr[vector.length];
-        //            Marshal.Copy(vector.data, ptrs, 0, ptrs.Length);
-        //            return ptrs;
-        //        }
     }
 
     public class MarshaledObjectArrayAccessor<T, TStruct, TField, TFieldStruct>
         where T : MarshaledObject<TStruct>
+        where TField : MarshaledObject<TFieldStruct>, new()
     {
-        public MarshaledObjectArrayAccessor(T parent, int fieldOffset) { }
+        readonly int SizeOf;
+        readonly IntPtr Ptr;
+        public MarshaledObjectArrayAccessor(T parent, int fieldOffset)
+        {
+            SizeOf = Marshal.SizeOf<TFieldStruct>();
+            Ptr = parent.Ptr + fieldOffset;
+        }
         public TField this[int index]
         {
-            get => default(TField);
-            set { }
+            get => Marshal2.ToMarshaledObject<TField, TFieldStruct>(Ptr + index * SizeOf);
+            //set => Marshal2.MarshaledObjectToPtr<TField, TFieldStruct>(Ptr + index * SizeOf, value, false);
         }
     }
 
@@ -250,6 +254,9 @@ namespace FreeTds
         }
 
         public TStruct Value => Marshal.PtrToStructure<TStruct>(Ptr);
+        public void WithPtr(Action<IntPtr> action) => action(Ptr);
+        //public void WithPtr(Func<IntPtr, IntPtr> action) { var ptr = action(Ptr); Ptr = ptr; }
+
     }
 
     #endregion

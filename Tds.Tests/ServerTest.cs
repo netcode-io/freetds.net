@@ -28,8 +28,11 @@ namespace FreeTds
                 Console.WriteLine("bsiz {0}", login.BlockSize);
             }
 
+            var abc = Marshal.SizeOf<TDSPOLLWAKEUP>();
+
             var connection = Task.Run(() =>
             {
+                //Common.SERVER = "localhost";
                 //var login = new TdsLogin(false);
                 //var ret = Common.try_tds_login(ref login, out var tds);
                 //if (ret != G.TDS_SUCCESS)
@@ -37,7 +40,7 @@ namespace FreeTds
                 //Common.run_query(tds, "Select * From Test;");
                 //Common.try_tds_logout(login, tds);
 
-                using (var conn = new SqlConnection("Data Source=tcp:localhost,1433;Initial Catalog=Test;MultipleActiveResultSets=True;user=guest;pwd=sybase;Encrypt=false;trustservercertificate=false"))
+                using (var conn = new SqlConnection("Data Source=tcp:localhost,1433;Initial Catalog=Test;MultipleActiveResultSets=False;user=guest;pwd=sybase;Encrypt=false;trustservercertificate=false"))
                 using (var com = new SqlCommand("Select * From Table", conn))
                 {
                     conn.Open();
@@ -54,20 +57,24 @@ namespace FreeTds
                 //};
                 ctx.ErrHandler = (a, b, c) =>
                 {
-                    return G.TDS_SUCCESS;
+                    return G.TDS_INT_CONTINUE;
                 };
                 //ctx.IntHandler = (a) =>
                 //{
                 //    return 0;
                 //};
                 var tds = ctx.Listen() ?? throw new Exception("Error Listening");
-                tds.InFlag = 0;
+                //tds.Conn.Env.Language = "us_english";
+                //tds.Conn.Env.Charset = "ISO-8859-1";
+                //tds.Conn.Env.Database = "master";
+                tds.Conn.ProductName = "Microsoft SQL Server";
+                tds.Conn.ProductVersion = G.TDS_MS_VER(7, 0, 4);
+                tds.Conn.Tds71rev1 = true;
                 using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
                 {
-                    tds.Conn.ProductName = "Microsoft SQL Server";
-                    tds.Conn.ProductVersion = G.TDS_MS_VER(7, 0, 0);
+                    login.EncryptionLevel = _ENCRYPT.TDS7_ENCRYPT_ON;
                     dump_login(login);
-                    if (login.UserName == "guest" && login.Password == "sybase")
+                    if (true || (login.UserName == "guest" && login.Password == "sybase"))
                     {
                         tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;
                         tds.EnvChange(P.TDS_ENV_DATABASE, "master", "pubs2");
@@ -79,7 +86,7 @@ namespace FreeTds
                         }
                         tds.EnvChange(P.TDS_ENV_PACKSIZE, null, "512");
                         //* TODO set mssql if tds7+ */
-                        tds.SendLoginAck("sql server");
+                        tds.SendLoginAck("Microsoft SQL Server");
                         if (G.IS_TDS50(tds.Conn.Value))
                             tds.SendCapabilitiesToken();
                         tds.SendDoneToken(0, 1);
@@ -91,16 +98,21 @@ namespace FreeTds
                 var query = tds.GetGenericQuery();
                 Console.WriteLine("query : {0}", query);
                 tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;
+                return;
                 using (var resinfo = new TdsResultInfo(1))
                 {
+                    resinfo.Columns[0].ColumnType = TDS_SERVER_TYPE.SYBVARCHAR;
+                    resinfo.Columns[0].ColumnSize = 30;
+                    resinfo.Columns[0].ColumnName = "name";
                     resinfo.CurrentRow = Marshal.StringToHGlobalAnsi("pubs2");
-                    resinfo.Columns[0] = new TdsColumn
-                    {
-                        ColumnType = TDS_SERVER_TYPE.SYBVARCHAR,
-                        ColumnSize = 30,
-                        ColumnName = "name",
-                        ColumnData = resinfo.CurrentRow,
-                    };
+                    resinfo.Columns[0].ColumnData = resinfo.CurrentRow;
+                    //var column = resinfo.Columns[0] = new TdsColumn
+                    //{
+                    //    ColumnType = TDS_SERVER_TYPE.SYBVARCHAR,
+                    //    ColumnSize = 30,
+                    //    ColumnName = "name",
+                    //    ColumnData = resinfo.CurrentRow,
+                    //};
                     tds.SendResult(resinfo);
                     tds.SendControlToken(1);
                     tds.SendRow(resinfo);

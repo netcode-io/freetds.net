@@ -6,11 +6,11 @@ namespace FreeTds
     public class Common
     {
         static TdsContext test_context = null;
-        static string USER = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[1];
-        static string SERVER = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[0];
-        static string PASSWORD = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[2];
-        //static string DATABASE = "";
-        static string CHARSET = "ISO-8859-1";
+        public static string USER = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[1];
+        public static string SERVER = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[0];
+        public static string PASSWORD = Environment.GetEnvironmentVariable("_TDSLOGIN")?.Split(":")[2];
+        //public static string DATABASE = "";
+        public static string CHARSET = "ISO-8859-1";
 
         /// <summary>
         /// Run query for which there should be no return results
@@ -59,7 +59,6 @@ namespace FreeTds
 
         public static TDSRET try_tds_login(ref TdsLogin login, out TdsSocket tds, bool verbose = false)
         {
-            //SERVER = "localhost";
             tds = null;
             if (!login.SetPasswd(PASSWORD)
                 || !login.SetUser(USER)

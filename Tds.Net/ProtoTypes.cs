@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace FreeTds
 {
@@ -397,7 +398,8 @@ namespace FreeTds
     /// <summary>
     /// mssql login options flags
     /// </summary>
-    public enum option_flag1_values
+    [Flags]
+    public enum option_flag1_values : byte
     {
         TDS_BYTE_ORDER_X86 = 0,
         TDS_CHARSET_ASCII = 0,
@@ -419,7 +421,8 @@ namespace FreeTds
         TDS_SET_LANG_ON = 0x80
     }
 
-    public enum option_flag2_values
+    [Flags]
+    public enum option_flag2_values : byte
     {
         TDS_INIT_LANG_WARN = 0,
         TDS_INTEGRATED_SECURTY_OFF = 0,
@@ -539,7 +542,7 @@ namespace FreeTds
     /// <summary>
     /// MS encryption byte (pre login)
     /// </summary>
-    public enum _ENCRYPT
+    public enum _ENCRYPT : byte
     {
         TDS7_ENCRYPT_OFF,
         TDS7_ENCRYPT_ON,
