@@ -263,33 +263,33 @@ namespace FreeTds
 
     #region NativeFactory
 
-    public class LazyFactory
-    {
-        readonly Func<bool> _disposed;
-        readonly string _objectName;
+    //public class LazyFactory
+    //{
+    //    readonly Func<bool> _disposed;
+    //    readonly string _objectName;
 
-        public LazyFactory(Func<bool> disposed, string objectName)
-        {
-            _disposed = disposed ?? throw new ArgumentNullException(nameof(disposed));
-            _objectName = objectName ?? throw new ArgumentNullException(nameof(objectName));
-        }
+    //    public LazyFactory(Func<bool> disposed, string objectName)
+    //    {
+    //        _disposed = disposed ?? throw new ArgumentNullException(nameof(disposed));
+    //        _objectName = objectName ?? throw new ArgumentNullException(nameof(objectName));
+    //    }
 
-        public Lazy<T> Create<T>(Func<T> factoryMethod) => new Lazy<T>(() =>
-        {
-            if (_disposed())
-                throw new ObjectDisposedException(_objectName);
-            return factoryMethod();
-        });
-    }
+    //    public Lazy<T> Create<T>(Func<T> factoryMethod) => new Lazy<T>(() =>
+    //    {
+    //        if (_disposed())
+    //            throw new ObjectDisposedException(_objectName);
+    //        return factoryMethod();
+    //    });
+    //}
 
-    public class NativeFactory
-    {
-        readonly LazyFactory _lazyFactory;
+    //public class NativeFactory
+    //{
+    //    readonly LazyFactory _lazyFactory;
 
-        public NativeFactory(LazyFactory lazyFactory) => _lazyFactory = lazyFactory;
+    //    public NativeFactory(LazyFactory lazyFactory) => _lazyFactory = lazyFactory;
 
-        public Lazy<T> CreateLazy<T>(Func<T> factoryMethod) => _lazyFactory.Create(factoryMethod);
-    }
+    //    public Lazy<T> CreateLazy<T>(Func<T> factoryMethod) => _lazyFactory.Create(factoryMethod);
+    //}
 
     #endregion
 
