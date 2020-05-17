@@ -4,30 +4,30 @@ if os.ishost "windows" then
     newaction
     {
         trigger     = "solution",
-        description = "Open the FreeTds.Net solution",
+        description = "Open the solution",
         execute = function ()
-            os.execute "start FreeTds.Net.sln"
+            os.execute "start freetds.net.sln"
         end
     }
 
     newaction
     {
         trigger     = "native",
-        description = "Build the native FreeTDS library",
+        description = "Build the native library",
         execute = function ()
              os.execute "mkdir _build64 & pushd _build64 \z
  && cmake -G \"Visual Studio 15 2017 Win64\" -DBITNESS=\"x64\" ..\\ \z
  && popd \z
  && cmake --build _build64 --config Release \z
- && copy _build64\\Release\\tds.dll Tds.Net\\x64 \z
- && copy _vcpkg\\packages\\openssl-windows_x64-windows\\bin\\*.dll Tds.Net\\x64"
+ && copy _build64\\Release\\tds.dll tds.net\\x64 \z
+ && copy _vcpkg\\packages\\openssl-windows_x64-windows\\bin\\*.dll tds.net\\x64"
         end
     }
 
     newaction
     {
         trigger     = "native_",
-        description = "Build the native FreeTDS library",
+        description = "Build the native library",
         execute = function ()
             os.execute "mkdir _build32 & pushd _build32 \z
 && cmake -G \"Visual Studio 15 2017\" -DBITNESS=\"x86\" ..\\ \z
@@ -70,9 +70,9 @@ end
 newaction
 {
     trigger     = "build",
-    description = "Build FreeTds.Net",
+    description = "Build tds.net",
     execute = function ()
-        os.execute "dotnet build FreeTds.Net/FreeTds.Net.csproj"
+        os.execute "dotnet build tds.net/tds.net.csproj"
     end
 }
 
@@ -82,7 +82,7 @@ newaction
     description = "Build and run all unit tests",
     execute = function ()
         -- os.execute "premake5 build"
-        os.execute "dotnet test FreeTds.Tests/FreeTds.Tests.csproj"
+        os.execute "dotnet test tds.tests/tds.tests.csproj"
     end
 }
 
@@ -91,7 +91,7 @@ newaction
     trigger     = "pack",
     description = "Package and run all unit tests",
     execute = function ()
-        os.execute "dotnet pack FreeTds.Net/FreeTds.Net.csproj --output ../nupkgs --include-source"
+        os.execute "dotnet pack tds.net/tds.net.csproj --output ../nupkgs --include-source"
     end
 }
 
@@ -102,7 +102,7 @@ newaction
     execute = function ()
         apikey = os.getenv('NUGET_APIKEY')
         os.execute "premake5 pack"
-        os.execute( "dotnet nuget push nupkgs/**/FreeTds.*.nupkg --api-key " .. apikey .. " --source https://api.nuget.org/v3/index.json" )
+        os.execute( "dotnet nuget push nupkgs/**/tds.*.nupkg --api-key " .. apikey .. " --source https://api.nuget.org/v3/index.json" )
     end
 }
 

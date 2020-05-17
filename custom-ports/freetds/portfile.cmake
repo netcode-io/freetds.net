@@ -1,9 +1,9 @@
 include(vcpkg_common_functions)
 
 vcpkg_download_distfile(ARCHIVE
-    URLS "https://www.freetds.org/files/stable/freetds-1.1.24.tar.bz2"
-    FILENAME "freetds-1.1.24.tar.bz2"
-    SHA512 7419a8f171ab50aeeb0cf0adc7f29c524dd5960a79249f89a52ec73b4cb843330d6c096aa71405cbe28bf568a8b7726f255955f74b3c12b5452d5b74715ecaa5
+    URLS "https://www.freetds.org/files/stable/freetds-1.1.36.tar.bz2"
+    FILENAME "freetds-1.1.36.tar.bz2"
+    SHA512 4f657cba4cec1490364f08ab9b84760d9c95c530094758b2166409c0c268aceb273681dff6abebf7b4914a3a44db5ed083bae347a60af5121b5030d16b4d6971
 )
 
 vcpkg_extract_source_archive_ex(
@@ -12,6 +12,12 @@ vcpkg_extract_source_archive_ex(
     PATCHES
         crypt32.patch
 )
+file(INSTALL ${CURRENT_PORT_DIR}/pool/user.c DESTINATION ${SOURCE_PATH}/src/pool)
+file(INSTALL ${CURRENT_PORT_DIR}/server/login.c DESTINATION ${SOURCE_PATH}/src/server)
+file(INSTALL ${CURRENT_PORT_DIR}/server/query.c DESTINATION ${SOURCE_PATH}/src/server)
+file(INSTALL ${CURRENT_PORT_DIR}/server/server.c DESTINATION ${SOURCE_PATH}/src/server)
+file(INSTALL ${CURRENT_PORT_DIR}/server/unittest.c DESTINATION ${SOURCE_PATH}/src/server)
+file(INSTALL ${CURRENT_PORT_DIR}/server/server.h DESTINATION ${SOURCE_PATH}/include/freetds)
 
 set(BUILD_freetds_openssl OFF)
 if("openssl" IN_LIST FEATURES)

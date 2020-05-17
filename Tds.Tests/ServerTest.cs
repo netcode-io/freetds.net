@@ -67,26 +67,21 @@ namespace FreeTds
                 //tds.Conn.Env.Language = "us_english";
                 //tds.Conn.Env.Charset = "ISO-8859-1";
                 //tds.Conn.Env.Database = "master";
-                tds.Conn.ProductName = "Microsoft SQL Server";
-                tds.Conn.ProductVersion = G.TDS_MS_VER(7, 0, 4);
-                tds.Conn.Tds71rev1 = true;
-                using (var login = tds.AllocReadLogin() ?? throw new Exception("Error reading login"))
+                using (var login = tds.AllocReadLogin(0x702) ?? throw new Exception("Error reading login"))
                 {
-                    login.EncryptionLevel = _ENCRYPT.TDS7_ENCRYPT_ON;
                     dump_login(login);
                     if (true || (login.UserName == "guest" && login.Password == "sybase"))
                     {
                         tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;
-                        tds.EnvChange(P.TDS_ENV_DATABASE, "master", "pubs2");
-                        tds.SendMsg(5701, 2, 10, "Changed database context to 'pubs2'.", "JDBC", "ZZZZZ", 1);
-                        if (!login.Value.suppress_language)
-                        {
-                            tds.EnvChange(P.TDS_ENV_LANG, null, "us_english");
-                            tds.SendMsg(5703, 1, 10, "Changed language setting to 'us_english'.", "JDBC", "ZZZZZ", 1);
-                        }
-                        tds.EnvChange(P.TDS_ENV_PACKSIZE, null, "512");
-                        //* TODO set mssql if tds7+ */
-                        tds.SendLoginAck("Microsoft SQL Server");
+                        //tds.EnvChange(P.TDS_ENV_DATABASE, "master", "pubs2");
+                        //tds.SendMsg(5701, 2, 10, "Changed database context to 'pubs2'.", "JDBC", "ZZZZZ", 1);
+                        //if (!login.Value.suppress_language)
+                        //{
+                        //    tds.EnvChange(P.TDS_ENV_LANG, null, "us_english");
+                        //    tds.SendMsg(5703, 1, 10, "Changed language setting to 'us_english'.", "JDBC", "ZZZZZ", 1);
+                        //}
+                        //tds.EnvChange(P.TDS_ENV_PACKSIZE, null, "512");
+                        tds.SendLoginAck("Microsoft SQL Server", G.TDS_MS_VER(10, 0, 6000));
                         if (G.IS_TDS50(tds.Conn.Value))
                             tds.SendCapabilitiesToken();
                         tds.SendDoneToken(0, 1);
@@ -98,28 +93,28 @@ namespace FreeTds
                 var query = tds.GetGenericQuery();
                 Console.WriteLine("query : {0}", query);
                 tds.OutFlag = TDS_PACKET_TYPE.TDS_REPLY;
-                return;
-                using (var resinfo = new TdsResultInfo(1))
-                {
-                    resinfo.Columns[0].ColumnType = TDS_SERVER_TYPE.SYBVARCHAR;
-                    resinfo.Columns[0].ColumnSize = 30;
-                    resinfo.Columns[0].ColumnName = "name";
-                    resinfo.CurrentRow = Marshal.StringToHGlobalAnsi("pubs2");
-                    resinfo.Columns[0].ColumnData = resinfo.CurrentRow;
-                    //var column = resinfo.Columns[0] = new TdsColumn
-                    //{
-                    //    ColumnType = TDS_SERVER_TYPE.SYBVARCHAR,
-                    //    ColumnSize = 30,
-                    //    ColumnName = "name",
-                    //    ColumnData = resinfo.CurrentRow,
-                    //};
-                    tds.SendResult(resinfo);
-                    tds.SendControlToken(1);
-                    tds.SendRow(resinfo);
-                    tds.SendDoneToken(16, 1);
-                    tds.FlushPacket();
-                    Thread.Sleep(30 * 1000);
-                }
+                if (false)
+                    using (var resinfo = new TdsResultInfo(1))
+                    {
+                        resinfo.Columns[0].ColumnType = TDS_SERVER_TYPE.SYBVARCHAR;
+                        resinfo.Columns[0].ColumnSize = 30;
+                        resinfo.Columns[0].ColumnName = "name";
+                        resinfo.CurrentRow = Marshal.StringToHGlobalAnsi("pubs2");
+                        resinfo.Columns[0].ColumnData = resinfo.CurrentRow;
+                        //var column = resinfo.Columns[0] = new TdsColumn
+                        //{
+                        //    ColumnType = TDS_SERVER_TYPE.SYBVARCHAR,
+                        //    ColumnSize = 30,
+                        //    ColumnName = "name",
+                        //    ColumnData = resinfo.CurrentRow,
+                        //};
+                        tds.SendResult(resinfo);
+                        tds.SendControlToken(1);
+                        tds.SendRow(resinfo);
+                    }
+                tds.SendDoneToken(16, 1);
+                tds.FlushPacket();
+                //Thread.Sleep((int)(.5M * 1000M));
             }
         }
     }

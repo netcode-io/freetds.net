@@ -9,7 +9,7 @@ namespace FreeTds
         public void Setup()
         {
             Tds.Touch();
-            Tds.DumpOpen(@"C:\T_\dump.log");
+            //Tds.DumpOpen(@"C:\T_\dump.log");
         }
 
         [Test]
@@ -17,7 +17,7 @@ namespace FreeTds
         {
             var settings = Tds.GetCompiletimeSettings();
             Assert.AreEqual("auto", settings.tdsver);
-            Assert.AreEqual("freetds v1.1.24", settings.freetds_version);
+            Assert.AreEqual("freetds v1.1.36", settings.freetds_version);
         }
 
         /// <summary>

@@ -12,18 +12,18 @@ namespace FreeTds
         [DllImport(LibraryName)] public static extern IntPtr tds_listen(IntPtr ctx, int ip_port); //:TDSCONTEXT->TDSSOCKET
         [DllImport(LibraryName)] public static extern int tds_read_login(IntPtr tds, out IntPtr login); //:TDSSOCKET:TDSLOGIN
         [DllImport(LibraryName)] public static extern int tds7_read_login(IntPtr tds, out IntPtr login); //:TDSSOCKET:TDSLOGIN
-        [DllImport(LibraryName)] public static extern IntPtr tds_alloc_read_login(IntPtr tds); //:TDSSOCKET->TDSLOGIN
+        [DllImport(LibraryName)] public static extern IntPtr tds_alloc_read_login(IntPtr tds, ushort tds_version); //:TDSSOCKET->TDSLOGIN
         #endregion
 
         #region query.c
         [DllImport(LibraryName)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_get_query(IntPtr tds); //:TDSSOCKET
-        [DllImport(LibraryName)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_get_generic_query(IntPtr tds); //:TDSSOCKET
+        [DllImport(LibraryName)] [return: MarshalAs(UnmanagedType.LPStr)] public static extern string tds_get_generic_query(IntPtr tds, IntPtr head); //:TDSSOCKET
         #endregion
 
         #region server.c
         [DllImport(LibraryName)] public static extern void tds_env_change(IntPtr tds, int type, [MarshalAs(UnmanagedType.LPStr)] string oldvalue, [MarshalAs(UnmanagedType.LPStr)] string newvalue); //:TDSSOCKET
         [DllImport(LibraryName)] public static extern void tds_send_msg(IntPtr tds, int msgno, int msgstate, int severity, [MarshalAs(UnmanagedType.LPStr)] string msgtext, [MarshalAs(UnmanagedType.LPStr)] string srvname, [MarshalAs(UnmanagedType.LPStr)] string procname, int line); //:TDSSOCKET
-        [DllImport(LibraryName)] public static extern void tds_send_login_ack(IntPtr tds, [MarshalAs(UnmanagedType.LPStr)] string progname); //:TDSSOCKET
+        [DllImport(LibraryName)] public static extern void tds_send_login_ack(IntPtr tds, [MarshalAs(UnmanagedType.LPStr)] string progname, uint product_version); //:TDSSOCKET
         [DllImport(LibraryName)] public static extern void tds_send_eed(IntPtr tds, int msgno, int msgstate, int severity, [MarshalAs(UnmanagedType.LPStr)] string msgtext, [MarshalAs(UnmanagedType.LPStr)] string srvname, [MarshalAs(UnmanagedType.LPStr)] string procname, int line); //:TDSSOCKET
         [DllImport(LibraryName)] public static extern void tds_send_err(IntPtr tds, int severity, int dberr, int oserr, [MarshalAs(UnmanagedType.LPStr)] string dberrstr, [MarshalAs(UnmanagedType.LPStr)] string oserrstr); //:TDSSOCKET
         [DllImport(LibraryName)] public static extern void tds_send_capabilities_token(IntPtr tds); //:TDSSOCKET

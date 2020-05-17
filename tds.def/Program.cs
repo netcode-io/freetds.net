@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace DefGen
+namespace FreeTds
 {
     class Program
     {
@@ -38,8 +38,8 @@ namespace DefGen
             if (args.Length < 2)
             {
                 Console.WriteLine(@"HELP
-DefGen x86 [path to lib]
-DefGen x64 [path to lib]
+tds.def x86 [path to lib]
+tds.def x64 [path to lib]
 ");
                 return 1;
             }

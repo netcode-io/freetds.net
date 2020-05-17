@@ -29,7 +29,7 @@ if(WIN32)
    #if (NOT EXISTS ${VCPKG}/packages/freetds_x86-windows/lib/tds.def)
    #   message("x86 tds.def. generating...")
    #   execute_process(
-   #      COMMAND dotnet run --project ./DefGen x86 ${VCPKG}/packages/freetds_x86-windows/lib/tds.lib ${VCPKG}/packages/freetds_x86-windows/lib/tdssrv.lib
+   #      COMMAND dotnet run --project ./tds.def x86 ${VCPKG}/packages/freetds_x86-windows/lib/tds.lib ${VCPKG}/packages/freetds_x86-windows/lib/tdssrv.lib
    #      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
    #   )
    #endif()
@@ -45,7 +45,7 @@ if(WIN32)
    if (NOT EXISTS ${VCPKG}/packages/freetds_x64-windows/lib/tds.def)
       message("x64 tds.def. generating...")
       execute_process(
-         COMMAND dotnet run --project ./DefGen x64 ${VCPKG}/packages/freetds_x64-windows/lib/tds.lib ${VCPKG}/packages/freetds_x64-windows/lib/tdssrv.lib
+         COMMAND dotnet run --project ./tds.def x64 ${VCPKG}/packages/freetds_x64-windows/lib/tds.lib ${VCPKG}/packages/freetds_x64-windows/lib/tdssrv.lib
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
    endif()

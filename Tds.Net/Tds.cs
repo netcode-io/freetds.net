@@ -1,4 +1,5 @@
-﻿using System;
+﻿//https://www.freetds.org/tds.html
+using System;
 using System.Runtime.InteropServices;
 using TDSCOMPUTEINFO = FreeTds.TDSRESULTINFO;
 using TDSPARAMINFO = FreeTds.TDSRESULTINFO;
@@ -632,7 +633,7 @@ namespace FreeTds
         public int Error(TdsSocket tds, int msgno, int errnum) => NativeMethods.tdserror(Ptr, tds.Ptr, msgno, errnum);
 
         // server : login.c
-        public TdsSocket Listen(int ipPort = 1433) { var r = NativeMethodsServer.tds_listen(Ptr, ipPort).ToMarshaledObject<TdsSocket, TDSSOCKET>(); r.SetState(TDS_STATE.TDS_IDLE); return r; }
+        public TdsSocket Listen(int ipPort = 1433) => NativeMethodsServer.tds_listen(Ptr, ipPort).ToMarshaledObject<TdsSocket, TDSSOCKET>();
 
         #endregion
     }
@@ -1225,6 +1226,8 @@ namespace FreeTds
         public TdsSocket() : base(null, null, NativeMethods.tds_free_socket) { }
         public TdsSocket(TdsContext ctx, int bufSize = 4096) : base(arg => NativeMethods.tds_alloc_socket(ctx.Ptr, (uint)arg), bufSize, NativeMethods.tds_free_socket) { }
 
+        public bool IsDead => G.IS_TDSDEAD(Value);
+
         #region Properties
 
         public TdsContext _Context // Special
@@ -1451,22 +1454,22 @@ namespace FreeTds
         // server : login.c
         public int ReadLogin(out TdsLogin login) { var r = NativeMethodsServer.tds_read_login(Ptr, out var loginPtr); login = new TdsLogin { Ptr = loginPtr }; return r; }
         public int ReadLogin7(out TdsLogin login) { var r = NativeMethodsServer.tds7_read_login(Ptr, out var loginPtr); login = new TdsLogin { Ptr = loginPtr }; return r; }
-        public TdsLogin AllocReadLogin() => NativeMethodsServer.tds_alloc_read_login(Ptr).ToMarshaledObject<TdsLogin, TDSLOGIN>();
+        public TdsLogin AllocReadLogin(ushort tdsVersion) => NativeMethodsServer.tds_alloc_read_login(Ptr, tdsVersion).ToMarshaledObject<TdsLogin, TDSLOGIN>();
 
         // server : query.c
         public string GetQuery() => NativeMethodsServer.tds_get_query(Ptr);
-        public string GetGenericQuery() => NativeMethodsServer.tds_get_generic_query(Ptr);
+        public string GetGenericQuery(TdsHeaders head = null) => NativeMethodsServer.tds_get_generic_query(Ptr, head == null ? IntPtr.Zero : head.Ptr);
 
         // server : server.c
         public void EnvChange(int type, string oldValue, string newValue) => NativeMethodsServer.tds_env_change(Ptr, type, oldValue, newValue);
         public void SendMsg(int msgno, int msgstate, int severity, string msgText, string srvName, string procName, int line) => NativeMethodsServer.tds_send_msg(Ptr, msgno, msgstate, severity, msgText, srvName, procName, line);
-        public void SendLoginAck(string procName) => NativeMethodsServer.tds_send_login_ack(Ptr, procName);
+        public void SendLoginAck(string procName, uint productVersion) => NativeMethodsServer.tds_send_login_ack(Ptr, procName, productVersion);
         public void SendEed(int msgno, int msgstate, int severity, string msgText, string srvName, string procName, int line) => NativeMethodsServer.tds_send_eed(Ptr, msgno, msgstate, severity, msgText, srvName, procName, line);
         public void SendErr(int severity, int dbErr, int osErr, string dbErrStr, string osErrStr) => NativeMethodsServer.tds_send_err(Ptr, severity, dbErr, osErr, dbErrStr, osErrStr);
         public void SendCapabilitiesToken() => NativeMethodsServer.tds_send_capabilities_token(Ptr);
         //
-        public void SendDoneToken(short flags, int numrows) => NativeMethodsServer.tds_send_done_token(Ptr, flags, numrows);
-        public void SendDone(int token, short flags, int numrows) => NativeMethodsServer.tds_send_done(Ptr, token, flags, numrows);
+        public void SendDoneToken(tds_end flags, int numrows) => NativeMethodsServer.tds_send_done_token(Ptr, (short)flags, numrows);
+        public void SendDone(int token, tds_end flags, int numrows) => NativeMethodsServer.tds_send_done(Ptr, token, (short)flags, numrows);
         public void SendControlToken(short numcols) => NativeMethodsServer.tds_send_control_token(Ptr, numcols);
         public void SendColName(TdsResultInfo resinfo) => NativeMethodsServer.tds_send_col_name(Ptr, resinfo.Ptr);
         public void SendColInfo(TdsResultInfo resinfo) => NativeMethodsServer.tds_send_col_info(Ptr, resinfo.Ptr);

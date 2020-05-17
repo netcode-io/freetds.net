@@ -228,7 +228,8 @@ namespace FreeTds
     /// <summary>
     /// Flags returned in TDS_DONE token
     /// </summary>
-    public enum tds_end
+    [Flags]
+    public enum tds_end : short
     {
         /// <summary>
         /// final result set, command completed successfully.
